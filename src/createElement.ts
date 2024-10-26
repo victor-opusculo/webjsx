@@ -15,13 +15,13 @@ export function createElement(
   const flatten = (child: any) => {
     if (Array.isArray(child)) {
       child.forEach(flatten);
+    } else if (typeof child === "string" || typeof child === "number") {
+      flatChildren.push(child);
     } else if (
-      typeof child === "string" ||
-      typeof child === "number" ||
+      child === null ||
+      child === undefined ||
       typeof child === "boolean"
     ) {
-      flatChildren.push(child);
-    } else if (child === null || child === undefined) {
       // Ignore null or undefined children
     } else {
       flatChildren.push(child);

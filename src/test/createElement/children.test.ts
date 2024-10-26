@@ -4,13 +4,9 @@ import { createElement } from "../../index.js";
 import { VElement } from "../../types.js";
 
 describe("createElement - Children Handling", () => {
-  it("should handle primitive children", () => {
+  it("should handle primitive children (excluding booleans)", () => {
     const vdom = createElement("span", null, "Text", 123, true);
-    expect((vdom as VElement).props.children).to.deep.equal([
-      "Text",
-      123,
-      true,
-    ]);
+    expect((vdom as VElement).props.children).to.deep.equal(["Text", 123]);
   });
 
   it("should handle nested elements", () => {
