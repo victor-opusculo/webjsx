@@ -1,6 +1,14 @@
 import { SVG_NAMESPACE } from "./constants.js";
-import { Fragment, VNode } from "./types.js";
+import { Fragment, VNode, FragmentType } from "./types.js";
 import { setAttributes } from "./utils.js";
+
+function isFragment(type: any): type is FragmentType {
+  return type === Fragment;
+}
+
+function ensureArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value];
+}
 
 export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
   if (
@@ -9,10 +17,11 @@ export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
     typeof vnode === "boolean"
   ) {
     return document.createTextNode(String(vnode));
-  } else if (vnode.type === Fragment) {
+  } else if (isFragment(vnode.type)) {
     const fragment = document.createDocumentFragment();
     if (vnode.props.children) {
-      vnode.props.children.forEach((child) => {
+      const children = ensureArray(vnode.props.children);
+      children.forEach((child) => {
         fragment.appendChild(createNode(child, undefined));
       });
     }
@@ -52,7 +61,8 @@ export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
     }
 
     if (vnode.props.children && !vnode.props.dangerouslySetInnerHTML) {
-      vnode.props.children.forEach((child) => {
+      const children = ensureArray(vnode.props.children);
+      children.forEach((child) => {
         el.appendChild(createNode(child, namespaceURI));
       });
     }

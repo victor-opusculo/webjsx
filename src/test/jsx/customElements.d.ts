@@ -2,7 +2,7 @@
 
 import "../../index.ts";
 
-declare module "../../index.js" {
+declare global {
   namespace JSX {
     interface IntrinsicElements {
       "my-jsx-element": {

@@ -1,4 +1,8 @@
-export const Fragment = Symbol("Fragment");
+export const Fragment = (props: { children?: any }) => {
+  return Array.isArray(props.children) ? props.children : [props.children];
+};
+
+export type FragmentType = typeof Fragment;
 
 export type Primitive = string | number | boolean;
 
@@ -12,7 +16,7 @@ export interface ElementProps {
 }
 
 export interface VElement {
-  type: string | typeof Fragment;
+  type: string | FragmentType;
   props: ElementProps;
 }
 
