@@ -343,7 +343,7 @@ To fix this you need to declare custom elements in a declarations file, such as 
 ```ts
 import "webjsx";
 
-declare module "webjsx" {
+declare global {
   namespace JSX {
     interface IntrinsicElements {
       "counter-element": {
