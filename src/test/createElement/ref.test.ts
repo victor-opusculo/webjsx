@@ -1,5 +1,3 @@
-// src/test/createElement/ref.test.ts
-
 import "../setup.js";
 import { expect } from "chai";
 import { createElement, Fragment } from "../../index.js";

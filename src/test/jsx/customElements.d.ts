@@ -1,7 +1,3 @@
-// File path: ./src/index.tsx
-
-import "../../index.ts";
-
 declare global {
   namespace JSX {
     interface IntrinsicElements {
@@ -42,3 +38,5 @@ declare global {
     }
   }
 }
+
+export {};
