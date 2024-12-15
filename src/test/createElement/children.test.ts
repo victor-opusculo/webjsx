@@ -1,7 +1,7 @@
 import "../setup.js";
 import { expect } from "chai";
 import { createElement } from "../../index.js";
-import { VElement } from "../../types.js";
+import { VElement, VNode } from "../../types.js";
 
 describe("createElement - Children Handling", () => {
   it("should handle primitive children (excluding booleans)", () => {
@@ -18,13 +18,10 @@ describe("createElement - Children Handling", () => {
     );
 
     expect((vdom as VElement).type).to.equal("ul");
-    expect((vdom as VElement).props.children).to.have.lengthOf(2);
-    expect(((vdom as VElement).props.children![0] as VElement).type).to.equal(
-      "li"
-    );
-    expect(
-      ((vdom as VElement).props.children![0] as VElement).props.children
-    ).to.deep.equal(["Item 1"]);
+    const children = (vdom as VElement).props.children as Array<VElement>;
+    expect(children).to.have.lengthOf(2);
+    expect(children[0].type).to.equal("li");
+    expect(children[0].props.children).to.deep.equal(["Item 1"]);
   });
 
   it("should ignore null and undefined children", () => {

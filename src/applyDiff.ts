@@ -3,10 +3,6 @@ import { createNode } from "./createNode.js";
 import { VNode, VElement, Fragment } from "./types.js";
 import { updateAttributes } from "./utils.js";
 
-function ensureArray<T>(value: T | T[]): T[] {
-  return Array.isArray(value) ? value : [value];
-}
-
 /**
  * Applies the differences between the new virtual node(s) and the existing DOM.
  * @param parent The parent DOM node where the virtual nodes will be applied.
@@ -24,14 +20,12 @@ export function applyDiff(parent: Node, newVirtualNode: VNode | VNode[]): void {
  * @param vnodes The array of virtual nodes to flatten.
  * @returns A new array of virtual nodes with Fragments flattened.
  */
-function flattenVNodes(vnodes: VNode | VNode[]): VNode[] {
+function flattenVNodes(vnodes: VNode[]): VNode[] {
   const flat: VNode[] = [];
-  const arrayVNodes = ensureArray(vnodes);
+  const arrayVNodes = vnodes;
   arrayVNodes.forEach((vnode) => {
     if (isFragment(vnode)) {
-      const children = vnode.props.children
-        ? ensureArray(vnode.props.children)
-        : [];
+      const children = vnode.props.children ? vnode.props.children : [];
       flat.push(...children);
     } else {
       flat.push(vnode);
@@ -54,7 +48,7 @@ function isFragment(vnode: VNode): vnode is VElement {
  * @param parent The parent DOM node whose children will be diffed.
  * @param newVNodes An array of new virtual nodes.
  */
-function diffChildren(parent: Node, newVNodes: VNode | VNode[]): void {
+function diffChildren(parent: Node, newVNodes: VNode[]): void {
   const flattenedVNodes = flattenVNodes(newVNodes);
 
   const existingNodes = Array.from(parent.childNodes);
@@ -146,12 +140,13 @@ function updateNode(domNode: Node, newVNode: VNode): void {
 
   if (newVNode.type === Fragment) {
     if (domNode instanceof DocumentFragment) {
-      diffChildren(domNode, newVNode.props.children || []);
+      diffChildren(
+        domNode,
+        newVNode.props.children ? newVNode.props.children : []
+      );
     } else {
       const fragment = document.createDocumentFragment();
-      const children = newVNode.props.children
-        ? ensureArray(newVNode.props.children)
-        : [];
+      const children = newVNode.props.children ? newVNode.props.children : [];
       children.forEach((child) => {
         fragment.appendChild(createNode(child, undefined));
       });
@@ -181,7 +176,7 @@ function updateNode(domNode: Node, newVNode: VNode): void {
     }
 
     if (!newProps.dangerouslySetInnerHTML && newProps.children != null) {
-      diffChildren(domNode, ensureArray(newProps.children));
+      diffChildren(domNode, newProps.children);
     }
   } else {
     const newDomNode = createNode(

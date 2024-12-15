@@ -14,11 +14,8 @@ describe("createElement - Fragments", () => {
 
     expect((vdom as VElement).type).to.equal(Fragment);
     expect((vdom as VElement).props.children).to.have.lengthOf(2);
-    expect(((vdom as VElement).props.children![0] as VElement).type).to.equal(
-      "p"
-    );
-    expect(((vdom as VElement).props.children![1] as VElement).type).to.equal(
-      "p"
-    );
+    const children = (vdom as VElement).props.children as Array<VElement>;
+    expect(children[0].type).to.equal("p");
+    expect(children[1].type).to.equal("p");
   });
 });

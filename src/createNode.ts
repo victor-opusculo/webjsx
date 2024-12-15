@@ -6,10 +6,6 @@ function isFragment(type: any): type is FragmentType {
   return type === Fragment;
 }
 
-function ensureArray<T>(value: T | T[]): T[] {
-  return Array.isArray(value) ? value : [value];
-}
-
 export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
   if (
     typeof vnode === "string" ||
@@ -20,7 +16,7 @@ export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
   } else if (isFragment(vnode.type)) {
     const fragment = document.createDocumentFragment();
     if (vnode.props.children) {
-      const children = ensureArray(vnode.props.children);
+      const children = vnode.props.children;
       children.forEach((child) => {
         fragment.appendChild(createNode(child, undefined));
       });
@@ -61,7 +57,7 @@ export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
     }
 
     if (vnode.props.children && !vnode.props.dangerouslySetInnerHTML) {
-      const children = ensureArray(vnode.props.children);
+      const children = vnode.props.children;
       children.forEach((child) => {
         el.appendChild(createNode(child, namespaceURI));
       });

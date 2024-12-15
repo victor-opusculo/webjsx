@@ -1,15 +1,11 @@
 import { Fragment, VElement, VNode } from "./types.js";
 
-/**
- * Implementation of createElement function.
- */
 export function createElement(
   type: string | typeof Fragment,
   props: { [key: string]: any } | null,
   ...children: any[]
 ): VElement {
   const normalizedProps: { [key: string]: any } = props ? { ...props } : {};
-
   const flatChildren: VNode[] = [];
 
   const flatten = (child: any) => {
@@ -35,7 +31,6 @@ export function createElement(
     if (!normalizedProps.dangerouslySetInnerHTML) {
       normalizedProps.children = flatChildren;
     } else {
-      // Optionally, you can warn the user that children are ignored when using dangerouslySetInnerHTML
       console.warn(
         "WebJSX: Ignoring children since dangerouslySetInnerHTML is set."
       );

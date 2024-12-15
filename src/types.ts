@@ -1,5 +1,9 @@
-export const Fragment = (props: { children?: any }) => {
-  return Array.isArray(props.children) ? props.children : [props.children];
+export const Fragment = (props: { children?: VNode | VNode[] }): VNode[] => {
+  return props.children
+    ? Array.isArray(props.children)
+      ? props.children
+      : [props.children]
+    : [];
 };
 
 export type FragmentType = typeof Fragment;

@@ -223,7 +223,6 @@ const domNode = webjsx.createNode(vnode);
 document.body.appendChild(domNode);
 ```
 
-
 ## Example: Creating a Counter Web Component
 
 ```jsx
@@ -329,10 +328,8 @@ Ensure your `tsconfig.json` is set up to handle JSX.
 ```json
 {
   "compilerOptions": {
-    //...
-    "jsx": "react",
-    "jsxFactory": "webjsx.createElement",
-    "jsxFragmentFactory": "webjsx.Fragment"
+    "jsx": "react-jsx",
+    "jsxImportSource": "webjsx"
   }
 }
 ```
@@ -373,7 +370,7 @@ You can load modules directly on the web page these days:
   <head>
     <title>WebJsx Test</title>
 
-  <!-- node_modules or wherever you downloaded webjsx -->
+    <!-- node_modules or wherever you downloaded webjsx -->
     <script type="importmap">
       {
         "imports": {
