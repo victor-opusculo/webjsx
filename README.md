@@ -374,7 +374,8 @@ You can load modules directly on the web page these days:
     <script type="importmap">
       {
         "imports": {
-          "webjsx": "../node_modules/webjsx/dist/index.js"
+          "webjsx": "../node_modules/webjsx/dist/index.js",
+          "webjsx/jsx-runtime": "../node_modules/webjsx/dist/jsx-runtime.js"
         }
       }
     </script>
@@ -388,7 +389,7 @@ You can load modules directly on the web page these days:
 </html>
 ```
 
-You can see more examples in the StackBlitz.
+You can see more examples on [StackBlitz](https://stackblitz.com/@jeswin/collections/webjsx).
 
 ## Contributing
 
