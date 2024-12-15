@@ -3,4 +3,4 @@ export { applyDiff } from "./applyDiff.js";
 export { createNode } from "./createNode.js";
 export { Fragment } from "./types.js";
 export * from "./types.js";
-export * from "./jsxTypes.js";
+export * from "./jsx.js";
