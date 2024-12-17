@@ -25,3 +25,8 @@ export interface VElement {
 }
 
 export type VNode = VElement | Primitive;
+
+export type WebJSXAwareComponent = {
+  __webjsx_suspendRendering?: () => void;
+  __webjsx_resumeRendering?: () => void;
+} & HTMLElement;

@@ -1,4 +1,157 @@
-import { VNode, Fragment } from "./types.js";
+import { VNode, Fragment, WebJSXAwareComponent } from "./types.js";
+
+/**
+ * Handles event listener updates for an element
+ */
+function updateEventListener(
+  el: Element,
+  eventName: string,
+  newHandler?: Function,
+  oldHandler?: Function
+): void {
+  if (oldHandler && oldHandler !== newHandler) {
+    el.removeEventListener(eventName, oldHandler as any);
+  }
+  if (newHandler && oldHandler !== newHandler) {
+    el.addEventListener(eventName, newHandler as any);
+    (el as any).__webjsx_listeners = {
+      ...((el as any).__webjsx_listeners || {}),
+      [eventName]: newHandler,
+    };
+  }
+}
+
+/**
+ * Updates a single property or attribute on an element
+ */
+function updatePropOrAttr(el: Element, key: string, value: any): void {
+  if (el instanceof HTMLElement) {
+    if (key in el) {
+      // Fast path: property exists on HTMLElement
+      (el as any)[key] = value;
+      return;
+    }
+    if (typeof value === "string") {
+      el.setAttribute(key, value);
+      return;
+    }
+    // Fallback for non-string values on HTMLElement
+    (el as any)[key] = value;
+    return;
+  }
+
+  // SVG/Other namespace elements
+  const isSVG = el.namespaceURI === "http://www.w3.org/2000/svg";
+  if (isSVG) {
+    if (value != null) {
+      el.setAttribute(key, value.toString());
+    } else {
+      el.removeAttribute(key);
+    }
+    return;
+  }
+
+  // Fallback for other element types
+  if (typeof value === "string") {
+    el.setAttribute(key, value);
+  } else {
+    (el as any)[key] = value;
+  }
+}
+
+/**
+ * Handles suspension of rendering during updates
+ */
+function withRenderSuspension<T>(el: Element, callback: () => T): T {
+  const isRenderingSuspended = !!(el as WebJSXAwareComponent)
+    .__webjsx_suspendRendering;
+  if (isRenderingSuspended) {
+    (el as WebJSXAwareComponent).__webjsx_suspendRendering!();
+  }
+
+  try {
+    return callback();
+  } finally {
+    if (isRenderingSuspended) {
+      (el as WebJSXAwareComponent).__webjsx_resumeRendering!();
+    }
+  }
+}
+
+/**
+ * Core function to update attributes and properties on a DOM element
+ */
+function updateAttributesCore(
+  el: Element,
+  newProps: { [key: string]: any },
+  oldProps: { [key: string]: any } = {}
+): void {
+  // Handle new/updated props
+  for (const [key, value] of Object.entries(newProps)) {
+    if (
+      key === "children" ||
+      key === "key" ||
+      key === "dangerouslySetInnerHTML"
+    )
+      continue;
+
+    if (key.startsWith("on") && typeof value === "function") {
+      const eventName = key.substring(2).toLowerCase();
+      updateEventListener(
+        el,
+        eventName,
+        value,
+        (el as any).__webjsx_listeners?.[eventName]
+      );
+    } else if (value !== oldProps[key]) {
+      updatePropOrAttr(el, key, value);
+    }
+  }
+
+  // Handle dangerouslySetInnerHTML
+  if ("dangerouslySetInnerHTML" in newProps) {
+    const html = newProps.dangerouslySetInnerHTML.__html || "";
+    el.innerHTML = html;
+  } else if ("dangerouslySetInnerHTML" in oldProps) {
+    el.innerHTML = "";
+  }
+
+  // If this is a fresh set (no oldProps), remove any attributes not in newProps
+  if (Object.keys(oldProps).length === 0) {
+    const currentAttrs = Array.from(el.attributes).map((attr) => attr.name);
+    for (const attr of currentAttrs) {
+      if (!(attr in newProps) && !attr.startsWith("on")) {
+        el.removeAttribute(attr);
+      }
+    }
+  }
+
+  // Remove old props/attributes
+  for (const key of Object.keys(oldProps)) {
+    if (
+      !(key in newProps) &&
+      key !== "children" &&
+      key !== "key" &&
+      key !== "dangerouslySetInnerHTML"
+    ) {
+      if (key.startsWith("on")) {
+        const eventName = key.substring(2).toLowerCase();
+        const existingListener = (el as any).__webjsx_listeners?.[eventName];
+        if (existingListener) {
+          el.removeEventListener(eventName, existingListener);
+          delete (el as any).__webjsx_listeners[eventName];
+        }
+      } else if (key in el) {
+        (el as any)[key] = undefined;
+      } else {
+        el.removeAttribute(key);
+      }
+    }
+  }
+
+  // Store current props for future updates
+  (el as any).__webjsx_props = newProps;
+}
 
 /**
  * Sets attributes and properties on a DOM element based on the provided props.
@@ -12,99 +165,9 @@ export function setAttributes(
   el: Element,
   props: { [key: string]: any }
 ): void {
-  let isRenderingSuspended = false;
-  if ((el as any).__webjsx_suspendRendering) {
-    isRenderingSuspended = true;
-    (el as any).__webjsx_suspendRendering(); // Call the suspension function
-  }
-
-  for (const [key, value] of Object.entries(props)) {
-    if (
-      key === "children" ||
-      key === "key" ||
-      key === "dangerouslySetInnerHTML"
-    )
-      continue;
-
-    if (el instanceof HTMLElement) {
-      if (key.startsWith("on") && typeof value === "function") {
-        // Handle event listeners
-        const eventName = key.substring(2).toLowerCase();
-        const existingListener = (el as any).__webjsx_listeners?.[eventName];
-        if (existingListener) {
-          el.removeEventListener(eventName, existingListener);
-        }
-        el.addEventListener(eventName, value);
-        (el as any).__webjsx_listeners = {
-          ...((el as any).__webjsx_listeners || {}),
-          [eventName]: value,
-        };
-      } else if (key in el) {
-        // If the property exists on the element, set it as a property
-        (el as any)[key] = value;
-      } else if (typeof value === "string") {
-        // Apply string attributes via setAttribute
-        el.setAttribute(key, value);
-      } else {
-        // Assign non-string values as properties
-        (el as any)[key] = value;
-      }
-    } 
-    // If not an HTML Element, then prefer attributes.
-    // eg: SVG, MATH
-    else {
-      if (typeof value === "string") {
-        // Apply string attributes via setAttribute
-        el.setAttribute(key, value);
-      } else {
-        // Assign non-string values as properties
-        (el as any)[key] = value;
-      }
-    }
-  }
-
-  // Handle dangerouslySetInnerHTML separately
-  if ("dangerouslySetInnerHTML" in props) {
-    const html = props.dangerouslySetInnerHTML.__html || "";
-    el.innerHTML = html;
-  }
-
-  // Handle removing old attributes not present in new props
-  const currentAttrs = Array.from(el.attributes).map((attr) => attr.name);
-  for (const attr of currentAttrs) {
-    if (!(attr in props) && !attr.startsWith("on")) {
-      el.removeAttribute(attr);
-    }
-  }
-
-  // Resetting old properties if not in new props
-  const oldProps = (el as any).__webjsx_props || {};
-  for (const key of Object.keys(oldProps)) {
-    if (!(key in props)) {
-      if (key.startsWith("on")) {
-        // Remove event listeners
-        const eventName = key.substring(2).toLowerCase();
-        const existingListener = (el as any).__webjsx_listeners?.[eventName];
-        if (existingListener) {
-          el.removeEventListener(eventName, existingListener);
-          delete (el as any).__webjsx_listeners[eventName];
-        }
-      } else if (key in el) {
-        // Remove property by setting it to undefined or a default value
-        (el as any)[key] = undefined;
-      } else {
-        // Remove attribute if it doesn't exist as a property
-        el.removeAttribute(key);
-      }
-    }
-  }
-
-  // Store the current props for future updates
-  (el as any).__webjsx_props = props;
-
-  if (isRenderingSuspended) {
-    (el as any).__webjsx_resumeRendering();
-  }
+  withRenderSuspension(el, () => {
+    updateAttributesCore(el, props);
+  });
 }
 
 /**
@@ -119,85 +182,7 @@ export function updateAttributes(
   newProps: { [key: string]: any },
   oldProps: { [key: string]: any }
 ): void {
-  let isRenderingSuspended = false;
-  if ((el as any).__webjsx_suspendRendering) {
-    isRenderingSuspended = true;
-    (el as any).__webjsx_suspendRendering(); // Call the suspension function
-  }
-
-  for (const [key, value] of Object.entries(newProps)) {
-    if (
-      key === "children" ||
-      key === "key" ||
-      key === "dangerouslySetInnerHTML"
-    )
-      continue;
-
-    if (key.startsWith("on") && typeof value === "function") {
-      // Handle event listeners
-      const eventName = key.substring(2).toLowerCase();
-      const existingListener = (el as any).__webjsx_listeners?.[eventName];
-      if (existingListener !== value) {
-        if (existingListener) {
-          el.removeEventListener(eventName, existingListener);
-        }
-        el.addEventListener(eventName, value);
-        (el as any).__webjsx_listeners = {
-          ...((el as any).__webjsx_listeners || {}),
-          [eventName]: value,
-        };
-      }
-    } else if (key in el) {
-      // If the property exists on the element, set it as a property
-      (el as any)[key] = value;
-    } else if (typeof value === "string") {
-      // Apply string attributes via setAttribute
-      el.setAttribute(key, value);
-    } else {
-      // Assign non-string values as properties
-      (el as any)[key] = value;
-    }
-  }
-
-  // Handle dangerouslySetInnerHTML separately
-  if ("dangerouslySetInnerHTML" in newProps) {
-    const html = newProps.dangerouslySetInnerHTML.__html || "";
-    el.innerHTML = html;
-  } else if ("dangerouslySetInnerHTML" in oldProps) {
-    // If previously set and now removed, clear innerHTML
-    el.innerHTML = "";
-  }
-
-  // Remove old attributes/properties not present in newProps
-  for (const key of Object.keys(oldProps)) {
-    if (
-      !(key in newProps) &&
-      key !== "children" &&
-      key !== "key" &&
-      key !== "dangerouslySetInnerHTML"
-    ) {
-      if (key.startsWith("on")) {
-        // Remove event listeners
-        const eventName = key.substring(2).toLowerCase();
-        const existingListener = (el as any).__webjsx_listeners?.[eventName];
-        if (existingListener) {
-          el.removeEventListener(eventName, existingListener);
-          delete (el as any).__webjsx_listeners[eventName];
-        }
-      } else if (key in el) {
-        // Remove property by setting it to undefined or a default value
-        (el as any)[key] = undefined;
-      } else {
-        // Remove attribute if it doesn't exist as a property
-        el.removeAttribute(key);
-      }
-    }
-  }
-
-  // Store the current props for future updates
-  (el as any).__webjsx_props = newProps;
-
-  if (isRenderingSuspended) {
-    (el as any).__webjsx_resumeRendering();
-  }
+  withRenderSuspension(el, () => {
+    updateAttributesCore(el, newProps, oldProps);
+  });
 }
