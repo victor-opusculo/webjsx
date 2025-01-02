@@ -10,7 +10,7 @@ export type FragmentType = typeof Fragment;
 
 export type Primitive = string | number | boolean;
 
-export type Ref = ((node: Node | null) => void) | { current: Node | null };
+export type Ref<T extends Node = Node> = ((node: T | null) => void) | { current: T | null };
 
 export interface ElementProps {
   [key: string]: any;
