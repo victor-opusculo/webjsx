@@ -117,29 +117,24 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
  * @param newVNode The new virtual node to apply.
  */
 function updateNode(domNode: Node, newVNode: VNode): void {
-  const nodeType = domNode.nodeType;
-  
   if (typeof newVNode === "string") {
-    if (nodeType === Node.TEXT_NODE) {
-      // We're already on a text node - check content
-      if (domNode.textContent !== newVNode) {
-        domNode.textContent = newVNode; // Faster than replace
-      }
-    } else {
-      // Not a text node - must replace
+    if (
+      domNode.nodeType !== Node.TEXT_NODE ||
+      domNode.textContent !== newVNode
+    ) {
       const newTextNode = document.createTextNode(newVNode);
-      domNode.parentNode?.insertBefore(newTextNode, domNode);
+      domNode.parentNode?.replaceChild(newTextNode, domNode);
     }
     return;
   }
 
   if (typeof newVNode === "number" || typeof newVNode === "boolean") {
     if (
-      nodeType !== Node.TEXT_NODE ||
+      domNode.nodeType !== Node.TEXT_NODE ||
       domNode.textContent !== String(newVNode)
     ) {
       const newTextNode = document.createTextNode(String(newVNode));
-      domNode.parentNode?.insertBefore(newTextNode, domNode);
+      domNode.parentNode?.replaceChild(newTextNode, domNode);
     }
     return;
   }
@@ -156,7 +151,7 @@ function updateNode(domNode: Node, newVNode: VNode): void {
       children.forEach((child) => {
         fragment.appendChild(createNode(child, undefined));
       });
-      domNode.parentNode?.insertBefore(fragment, domNode);
+      domNode.parentNode?.replaceChild(fragment, domNode);
     }
     return;
   }
@@ -202,7 +197,7 @@ function updateNode(domNode: Node, newVNode: VNode): void {
       assignRef(newDomNode, newVNode.props.ref);
     }
 
-    domNode.parentNode?.insertBefore(newDomNode, domNode);
+    domNode.parentNode?.replaceChild(newDomNode, domNode);
   }
 }
 
