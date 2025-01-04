@@ -43,7 +43,7 @@ function updatePropOrAttr(el: Element, key: string, value: any): void {
   // SVG/Other namespace elements
   const isSVG = el.namespaceURI === "http://www.w3.org/2000/svg";
   if (isSVG) {
-    if (value != null) {
+    if (value !== undefined && value !== null) {
       el.setAttribute(key, value.toString());
     } else {
       el.removeAttribute(key);

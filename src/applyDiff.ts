@@ -57,7 +57,7 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
   for (let i = 0; i < childNodes.length; i++) {
     const node = childNodes[i];
     const key = (node as any).__webjsx_key;
-    if (key != null) {
+    if (key !== undefined) {
       keyedMap.set(key, node);
     }
   }
@@ -70,7 +70,7 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
   for (let i = childNodes.length - 1; i >= 0; i--) {
     const node = childNodes[i];
     const key = (node as any).__webjsx_key;
-    if (key != null && !newKeys.includes(key)) {
+    if (key !== undefined && !newKeys.includes(key)) {
       parent.removeChild(node);
     }
   }
@@ -79,11 +79,11 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
     const newKey = isVElement(newVNode) ? newVNode.props.key : undefined;
     let existingNode: Node | null = null;
 
-    if (newKey != null) {
+    if (newKey !== undefined) {
       existingNode = keyedMap.get(newKey) || null;
     }
 
-    if (!existingNode && newKey == null) {
+    if (!existingNode && newKey === undefined) {
       existingNode = childNodes[i] || null;
     }
 
@@ -94,7 +94,7 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
       updateNode(existingNode, newVNode);
     } else {
       const newDomNode = createNode(newVNode, getNamespaceURI(parent));
-      if (isVElement(newVNode) && newVNode.props.key != null) {
+      if (isVElement(newVNode) && newVNode.props.key !== undefined) {
         (newDomNode as any).__webjsx_key = newVNode.props.key;
         (newDomNode as HTMLElement).setAttribute(
           "data-key",
@@ -157,7 +157,7 @@ function updateNode(domNode: Node, newVNode: VNode): void {
     const newProps = newVNode.props || {};
     updateAttributes(domNode, newProps, oldProps);
 
-    if (isVElement(newVNode) && newVNode.props.key != null) {
+    if (isVElement(newVNode) && newVNode.props.key !== undefined) {
       (domNode as any).__webjsx_key = newVNode.props.key;
       domNode.setAttribute("data-key", String(newVNode.props.key));
     } else {
@@ -169,7 +169,7 @@ function updateNode(domNode: Node, newVNode: VNode): void {
       assignRef(domNode, newProps.ref);
     }
 
-    if (!newProps.dangerouslySetInnerHTML && newProps.children != null) {
+    if (!newProps.dangerouslySetInnerHTML && newProps.children !== undefined) {
       diffChildren(domNode, newProps.children);
     }
   } else {
@@ -178,7 +178,7 @@ function updateNode(domNode: Node, newVNode: VNode): void {
       domNode.parentNode ? getNamespaceURI(domNode.parentNode) : undefined
     );
 
-    if (isVElement(newVNode) && newVNode.props.key != null) {
+    if (isVElement(newVNode) && newVNode.props.key !== undefined) {
       (newDomNode as any).__webjsx_key = newVNode.props.key;
       (newDomNode as HTMLElement).setAttribute(
         "data-key",
@@ -232,7 +232,7 @@ function isVElement(vnode: VNode): vnode is VElement {
 function isVElementWithKey(
   vnode: VNode
 ): vnode is VElement & { props: { key: string | number } } {
-  return isVElement(vnode) && vnode.props.key != null;
+  return isVElement(vnode) && vnode.props.key !== undefined;
 }
 
 function getNamespaceURI(node: Node): string | undefined {
