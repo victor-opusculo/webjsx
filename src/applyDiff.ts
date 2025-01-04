@@ -117,11 +117,18 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
  * @param newVNode The new virtual node to apply.
  */
 function updateNode(domNode: Node, newVNode: VNode): void {
-  if (
-    typeof newVNode === "string" ||
-    typeof newVNode === "number" ||
-    typeof newVNode === "boolean"
-  ) {
+  if (typeof newVNode === "string") {
+    if (
+      domNode.nodeType !== Node.TEXT_NODE ||
+      domNode.textContent !== newVNode
+    ) {
+      const newTextNode = document.createTextNode(newVNode);
+      domNode.parentNode?.replaceChild(newTextNode, domNode);
+    }
+    return;
+  }
+
+  if (typeof newVNode === "number" || typeof newVNode === "boolean") {
     if (
       domNode.nodeType !== Node.TEXT_NODE ||
       domNode.textContent !== String(newVNode)
