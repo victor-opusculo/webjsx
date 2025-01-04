@@ -391,10 +391,6 @@ You can load modules directly on the web page these days:
 
 You can see more examples on [StackBlitz](https://stackblitz.com/@jeswin/collections/webjsx).
 
-I'll add a new section about routing in the WebJSX README.md, placing it before the "API Reference" section. I'll add information about webjsx-router while maintaining the style and structure of the existing README.
-
-Here's how the new section should be added (I'll show just the new section, which should be inserted before "## API Reference"):
-
 ## Routing
 
 For routing needs, you can use [webjsx-router](https://github.com/webjsx/webjsx-router), a minimal type-safe pattern matching router designed specifically for WebJSX applications.
@@ -409,32 +405,26 @@ npm install webjsx-router
 
 ```jsx
 import * as webjsx from "webjsx";
-import { match } from "webjsx-router";
+import { match, goto, initRouter } from "webjsx-router";
 
-class AppRouter extends HTMLElement {
-  connectedCallback() {
-    this.render();
-    window.addEventListener("popstate", () => this.render());
-  }
+// Initialize router with routing logic
+const container = document.getElementById("app")!;
+initRouter(
+  container,
+  () =>
+    match("/users/:id", (params) => <user-details id={params.id} />) ||
+    match("/users", () => <user-list />) ||
+    <not-found />
+);
 
-  render() {
-    const vdom = match("/users/:id", (params, query) => (
-      <user-details id={params.id} tab={query.tab} />
-    )) ||
-      match("/users", () => <user-list />) || <not-found />;
-    webjsx.applyDiff(this, vdom);
-  }
-}
+// Navigation with goto
+goto("/users/123");
 
-// Register the router component
-if (!customElements.get("app-router")) {
-  customElements.define("app-router", AppRouter);
-}
+// With query parameters
+goto("/search", { q: "test", sort: "desc" });
 ```
 
 ### URL Pattern Examples
-
-The router supports various URL patterns with named parameters:
 
 ```jsx
 // Static routes
@@ -443,11 +433,6 @@ match("/about", () => <about-page />);
 // Routes with parameters
 match("/users/:id", (params) => <user-details id={params.id} />);
 
-// Multiple parameters
-match("/org/:orgId/users/:userId", (params) => (
-  <org-user orgId={params.orgId} userId={params.userId} />
-));
-
 // Query parameters
 // URL: /search?q=test&sort=desc
 match("/search", (params, query) => (
@@ -455,26 +440,7 @@ match("/search", (params, query) => (
 ));
 ```
 
-### TypeScript Support
-
-The router provides full TypeScript support with automatic type inference:
-
-```tsx
-// Parameters are fully typed
-match("/users/:userId/posts/:postId", (params) => {
-  params.userId; // typed as string
-  params.postId; // typed as string
-  return <user-post {...params} />;
-});
-
-// Query parameters are typed as Record<string, string>
-match("/users", (params, query) => {
-  query.page; // typed as string | undefined
-  return <user-list page={query.page} />;
-});
-```
-
-For more details about routing, check out the [webjsx-router documentation](https://github.com/webjsx/webjsx-router).
+The router includes TypeScript support with automatic type inference for parameters and query strings. For more details, check out the [webjsx-router documentation](https://github.com/webjsx/webjsx-router).
 
 ## Contributing
 
