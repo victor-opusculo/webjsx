@@ -50,27 +50,29 @@ function isFragment(vnode: VNode): vnode is VElement {
  */
 function diffChildren(parent: Node, newVNodes: VNode[]): void {
   const flattenedVNodes = flattenVNodes(newVNodes);
-
-  const existingNodes = Array.from(parent.childNodes);
   const keyedMap = new Map<string | number, Node>();
 
   // Populate keyedMap with existing keyed nodes
-  existingNodes.forEach((node) => {
+  for (let i = 0; i < parent.childNodes.length; i++) {
+    const node = parent.childNodes[i];
     const key = (node as any).__webjsx_key;
     if (key != null) {
       keyedMap.set(key, node);
     }
-  });
+  }
 
   const newKeys = flattenedVNodes
     .filter(isVElementWithKey)
     .map((vnode) => vnode.props.key);
-  existingNodes.forEach((node) => {
+
+  // Remove nodes that are no longer needed
+  for (let i = parent.childNodes.length - 1; i >= 0; i--) {
+    const node = parent.childNodes[i];
     const key = (node as any).__webjsx_key;
     if (key != null && !newKeys.includes(key)) {
       parent.removeChild(node);
     }
-  });
+  }
 
   flattenedVNodes.forEach((newVNode, i) => {
     const newKey = isVElement(newVNode) ? newVNode.props.key : undefined;
@@ -102,18 +104,9 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
     }
   });
 
-  const updatedChildNodes = Array.from(parent.childNodes);
-  const newUnkeyed = flattenedVNodes.filter(
-    (vnode) => !isVElementWithKey(vnode)
-  );
-  const existingUnkeyed = updatedChildNodes.filter(
-    (node) => !(node as any).__webjsx_key
-  );
-
-  if (newUnkeyed.length < existingUnkeyed.length) {
-    for (let i = newUnkeyed.length; i < existingUnkeyed.length; i++) {
-      parent.removeChild(existingUnkeyed[i]);
-    }
+  // Remove excess unkeyed nodes
+  while (parent.childNodes.length > flattenedVNodes.length) {
+    parent.removeChild(parent.lastChild!);
   }
 }
 
