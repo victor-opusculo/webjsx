@@ -47,7 +47,7 @@ export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
       setAttributes(el, vnode.props);
     }
 
-    if (vnode.props.key != null) {
+    if (vnode.props.key !== undefined) {
       (el as any).__webjsx_key = vnode.props.key;
       el.setAttribute("data-key", String(vnode.props.key));
     }
