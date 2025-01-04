@@ -51,10 +51,11 @@ function isFragment(vnode: VNode): vnode is VElement {
 function diffChildren(parent: Node, newVNodes: VNode[]): void {
   const flattenedVNodes = flattenVNodes(newVNodes);
   const keyedMap = new Map<string | number, Node>();
+  const childNodes = parent.childNodes;
 
   // Populate keyedMap with existing keyed nodes
-  for (let i = 0; i < parent.childNodes.length; i++) {
-    const node = parent.childNodes[i];
+  for (let i = 0; i < childNodes.length; i++) {
+    const node = childNodes[i];
     const key = (node as any).__webjsx_key;
     if (key != null) {
       keyedMap.set(key, node);
@@ -66,8 +67,8 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
     .map((vnode) => vnode.props.key);
 
   // Remove nodes that are no longer needed
-  for (let i = parent.childNodes.length - 1; i >= 0; i--) {
-    const node = parent.childNodes[i];
+  for (let i = childNodes.length - 1; i >= 0; i--) {
+    const node = childNodes[i];
     const key = (node as any).__webjsx_key;
     if (key != null && !newKeys.includes(key)) {
       parent.removeChild(node);
@@ -83,12 +84,12 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
     }
 
     if (!existingNode && newKey == null) {
-      existingNode = parent.childNodes[i] || null;
+      existingNode = childNodes[i] || null;
     }
 
     if (existingNode) {
-      if (existingNode !== parent.childNodes[i]) {
-        parent.insertBefore(existingNode, parent.childNodes[i] || null);
+      if (existingNode !== childNodes[i]) {
+        parent.insertBefore(existingNode, childNodes[i] || null);
       }
       updateNode(existingNode, newVNode);
     } else {
@@ -100,12 +101,12 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
           String(newVNode.props.key)
         );
       }
-      parent.insertBefore(newDomNode, parent.childNodes[i] || null);
+      parent.insertBefore(newDomNode, childNodes[i] || null);
     }
   });
 
   // Remove excess unkeyed nodes
-  while (parent.childNodes.length > flattenedVNodes.length) {
+  while (childNodes.length > flattenedVNodes.length) {
     parent.removeChild(parent.lastChild!);
   }
 }
