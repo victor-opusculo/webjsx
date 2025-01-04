@@ -105,7 +105,7 @@ function diffChildren(parent: Node, newVNodes: VNode[]): void {
     }
   });
 
-  // Remove excess unkeyed nodes
+  // Remove excess nodes
   while (childNodes.length > flattenedVNodes.length) {
     parent.removeChild(parent.lastChild!);
   }
