@@ -13,7 +13,10 @@ export function createElement(
       child.forEach(flatten);
     } else if (typeof child === "string" || typeof child === "number") {
       flatChildren.push(child);
-    } else if (
+    }
+    // Ignore nulls, undefined, and booleans
+    // Ignore booleans because React ignores them
+    else if (
       child === null ||
       child === undefined ||
       typeof child === "boolean"
