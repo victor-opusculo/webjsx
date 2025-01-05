@@ -16,21 +16,24 @@ export function applyDiff(parent: Node, newVirtualNode: VNode | VNode[]): void {
 }
 
 /**
- * Flattens the list of virtual nodes by replacing Fragments with their children.
+ * Flattens the list of virtual nodes by recursively replacing Fragments with their children.
  * @param vnodes The array of virtual nodes to flatten.
- * @returns A new array of virtual nodes with Fragments flattened.
+ * @returns A new array of virtual nodes with all Fragments flattened.
  */
 function flattenVNodes(vnodes: VNode[]): VNode[] {
   const flat: VNode[] = [];
   const arrayVNodes = vnodes;
+
   arrayVNodes.forEach((vnode) => {
     if (isFragment(vnode)) {
       const children = vnode.props.children ? vnode.props.children : [];
-      flat.push(...children);
+      // Recursively flatten any nested fragments
+      flat.push(...flattenVNodes(children));
     } else {
       flat.push(vnode);
     }
   });
+
   return flat;
 }
 
@@ -140,19 +143,12 @@ function updateNode(domNode: Node, newVNode: VNode): void {
   }
 
   if (newVNode.type === Fragment) {
-    if (domNode instanceof DocumentFragment) {
-      diffChildren(
-        domNode,
-        newVNode.props.children ? newVNode.props.children : []
-      );
-    } else {
-      const fragment = document.createDocumentFragment();
-      const children = newVNode.props.children ? newVNode.props.children : [];
-      children.forEach((child) => {
-        fragment.appendChild(createNode(child, undefined));
-      });
-      domNode.parentNode?.replaceChild(fragment, domNode);
-    }
+    const fragment = document.createDocumentFragment();
+    const children = newVNode.props.children ? newVNode.props.children : [];
+    children.forEach((child) => {
+      fragment.appendChild(createNode(child, undefined));
+    });
+    domNode.parentNode?.replaceChild(fragment, domNode);
     return;
   }
 
