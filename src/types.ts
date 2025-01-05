@@ -8,6 +8,8 @@ export type FragmentType = typeof Fragment;
 
 export type Primitive = string | number | boolean;
 
+export type NonBooleanPrimitive = string | number;
+
 /**
  * Reference type for DOM nodes.
  * Can be either a callback function or an object with a current property.
@@ -45,7 +47,7 @@ export type VRealElement = {
   props: ElementProps;
 };
 
-export type VRealNode = VRealElement | Primitive;
+export type VRealNode = VRealElement | NonBooleanPrimitive;
 
 export type ChildTypes = VNode | null | undefined | ChildTypes[];
 

@@ -13,12 +13,10 @@ export function createNode(
   vnode: VRealNode,
   parentNamespaceURI?: string
 ): Node {
-  if (
-    typeof vnode === "string" ||
-    typeof vnode === "number" ||
-    typeof vnode === "boolean"
-  ) {
-    return document.createTextNode(String(vnode));
+  if (typeof vnode === "string") {
+    return document.createTextNode(vnode);
+  } else if (typeof vnode === "number") {
+    return document.createTextNode(vnode.toString());
   } else {
     const namespaceURI =
       vnode.props.xmlns !== undefined
@@ -46,7 +44,7 @@ export function createNode(
 
     if (vnode.props.key !== undefined) {
       (el as any).__webjsx_key = vnode.props.key;
-      el.setAttribute("data-key", String(vnode.props.key));
+      el.setAttribute("data-key", vnode.props.key.toString());
     }
 
     if (vnode.props.ref) {

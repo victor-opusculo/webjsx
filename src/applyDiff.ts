@@ -68,7 +68,7 @@ function diffChildren(parent: Node, flattenedVNodes: VRealNode[]): void {
         (newDomNode as any).__webjsx_key = newVNode.props.key;
         (newDomNode as HTMLElement).setAttribute(
           "data-key",
-          String(newVNode.props.key)
+          newVNode.props.key.toString()
         );
       }
       parent.insertBefore(newDomNode, childNodes[i] || null);
@@ -93,18 +93,18 @@ function updateNode(domNode: Node, newVNode: VRealNode): void {
       domNode.textContent !== newVNode
     ) {
       const newTextNode = document.createTextNode(newVNode);
-      domNode.parentNode?.replaceChild(newTextNode, domNode);
+      domNode.parentNode?.insertBefore(newTextNode, domNode);
     }
     return;
   }
 
-  if (typeof newVNode === "number" || typeof newVNode === "boolean") {
+  if (typeof newVNode === "number") {
     if (
       domNode.nodeType !== Node.TEXT_NODE ||
-      domNode.textContent !== String(newVNode)
+      domNode.textContent !== newVNode.toString()
     ) {
-      const newTextNode = document.createTextNode(String(newVNode));
-      domNode.parentNode?.replaceChild(newTextNode, domNode);
+      const newTextNode = document.createTextNode(newVNode.toString());
+      domNode.parentNode?.insertBefore(newTextNode, domNode);
     }
     return;
   }
@@ -119,7 +119,7 @@ function updateNode(domNode: Node, newVNode: VRealNode): void {
 
     if (isVRealElement(newVNode) && newVNode.props.key !== undefined) {
       (domNode as any).__webjsx_key = newVNode.props.key;
-      domNode.setAttribute("data-key", String(newVNode.props.key));
+      domNode.setAttribute("data-key", newVNode.props.key.toString());
     } else {
       delete (domNode as any).__webjsx_key;
       domNode.removeAttribute("data-key");
@@ -147,7 +147,7 @@ function updateNode(domNode: Node, newVNode: VRealNode): void {
       (newDomNode as any).__webjsx_key = newVNode.props.key;
       (newDomNode as HTMLElement).setAttribute(
         "data-key",
-        String(newVNode.props.key)
+        newVNode.props.key.toString()
       );
     }
 
@@ -155,7 +155,7 @@ function updateNode(domNode: Node, newVNode: VRealNode): void {
       assignRef(newDomNode, newVNode.props.ref);
     }
 
-    domNode.parentNode?.replaceChild(newDomNode, domNode);
+    domNode.parentNode?.insertBefore(newDomNode, domNode);
   }
 }
 
