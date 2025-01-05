@@ -17,19 +17,23 @@ export function isFragment(vnode: VNode | null | undefined): vnode is VElement {
 export function flattenVNodes(
   vnodes: VNode | VNode[] | null | undefined
 ): VNode[] {
-  const flat: VNode[] = [];
+  if (Array.isArray(vnodes)) {
+    const flat: VNode[] = [];
 
-  const arrayVNodes = Array.isArray(vnodes) ? vnodes : [vnodes];
+    vnodes.forEach((vnode) => {
+      if (isFragment(vnode)) {
+        const children = vnode.props.children ? vnode.props.children : [];
+        // Recursively flatten any nested fragments
+        flat.push(...flattenVNodes(children));
+      } else if (vnode !== null && vnode !== undefined) {
+        flat.push(vnode);
+      }
+    });
 
-  arrayVNodes.forEach((vnode) => {
-    if (isFragment(vnode)) {
-      const children = vnode.props.children ? vnode.props.children : [];
-      // Recursively flatten any nested fragments
-      flat.push(...flattenVNodes(children));
-    } else if (vnode !== null && vnode !== undefined) {
-      flat.push(vnode);
-    }
-  });
-
-  return flat;
+    return flat;
+  } else if (vnodes !== null && vnodes !== undefined) {
+    return [vnodes];
+  } else {
+    return [];
+  }
 }
