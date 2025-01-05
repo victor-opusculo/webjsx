@@ -2,7 +2,11 @@ import { withRenderSuspension } from "./renderSuspension.js";
 import { VNode, Fragment, WebJSXAwareComponent } from "./types.js";
 
 /**
- * Handles event listener updates for an element
+ * Updates an event listener on an element.
+ * @param el Target element
+ * @param eventName Name of the event (without 'on' prefix)
+ * @param newHandler New event handler function
+ * @param oldHandler Previous event handler function
  */
 function updateEventListener(
   el: Element,
@@ -23,7 +27,10 @@ function updateEventListener(
 }
 
 /**
- * Updates a single property or attribute on an element
+ * Updates a single property or attribute on an element.
+ * @param el Target element
+ * @param key Property or attribute name
+ * @param value New value to set
  */
 function updatePropOrAttr(el: Element, key: string, value: any): void {
   if (el instanceof HTMLElement) {
@@ -61,7 +68,10 @@ function updatePropOrAttr(el: Element, key: string, value: any): void {
 }
 
 /**
- * Core function to update attributes and properties on a DOM element
+ * Updates all attributes and properties on a DOM element.
+ * @param el Target element
+ * @param newProps New properties to apply
+ * @param oldProps Previous properties for comparison (default empty object)
  */
 function updateAttributesCore(
   el: Element,
@@ -136,12 +146,9 @@ function updateAttributesCore(
 }
 
 /**
- * Sets attributes and properties on a DOM element based on the provided props.
- * If the property exists on the element, it sets it as a property.
- * Otherwise, it sets it as an attribute or property based on the value type.
- *
- * @param el - The DOM element to update.
- * @param props - The new properties to apply.
+ * Sets initial attributes and properties on a DOM element.
+ * @param el Target element
+ * @param props Properties to apply
  */
 export function setAttributes(
   el: Element,
@@ -153,11 +160,10 @@ export function setAttributes(
 }
 
 /**
- * Updates attributes and properties on a DOM element based on the new and old props.
- *
- * @param el - The DOM element to update.
- * @param newProps - The new properties to apply.
- * @param oldProps - The old properties to compare against.
+ * Updates existing attributes and properties on a DOM element.
+ * @param el Target element
+ * @param newProps New properties to apply
+ * @param oldProps Previous properties for comparison
  */
 export function updateAttributes(
   el: HTMLElement,

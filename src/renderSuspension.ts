@@ -1,7 +1,10 @@
 import { WebJSXAwareComponent } from "./types.js";
 
 /**
- * Handles suspension of rendering during updates
+ * Executes a callback with render suspension handling.
+ * @param el Element that may have render suspension
+ * @param callback Function to execute during suspension
+ * @returns Result of the callback
  */
 export function withRenderSuspension<T>(el: Element, callback: () => T): T {
   const isRenderingSuspended = !!(el as WebJSXAwareComponent)

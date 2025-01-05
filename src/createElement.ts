@@ -2,6 +2,13 @@ import { Fragment, VElement, VNode } from "./types.js";
 
 type CreateElementTypes = VNode | null | undefined | Array<CreateElementTypes>;
 
+/**
+ * Creates a virtual element representing a DOM node or Fragment.
+ * @param type Element type (tag name) or Fragment
+ * @param props Properties and attributes for the element
+ * @param children Child elements or content
+ * @returns Virtual element representation
+ */
 export function createElement(
   type: string | typeof Fragment,
   props: { [key: string]: any } | null,
@@ -20,8 +27,7 @@ export function createElement(
       child === undefined ||
       typeof child === "boolean"
     ) {
-      // Ignore nulls, undefined, and booleans
-      // Ignore booleans because React ignores them
+      // Skip null, undefined, and boolean children
     } else {
       flatChildren.push(child);
     }
@@ -30,7 +36,7 @@ export function createElement(
   children.forEach(flatten);
 
   if (flatChildren.length > 0) {
-    // Only set children if dangerouslySetInnerHTML is not present
+    // Set children property only if dangerouslySetInnerHTML is not present
     if (!normalizedProps.dangerouslySetInnerHTML) {
       normalizedProps.children = flatChildren;
     } else {

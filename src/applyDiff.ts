@@ -5,9 +5,9 @@ import { updateAttributes } from "./attributes.js";
 import { flattenVNodes } from "./utils.js";
 
 /**
- * Applies the differences between the new virtual node(s) and the existing DOM.
- * @param parent The parent DOM node where the virtual nodes will be applied.
- * @param newVirtualNode A single virtual node or an array of virtual nodes.
+ * Applies the differences between new virtual node(s) and the existing DOM.
+ * @param parent Parent DOM node where the virtual nodes will be applied
+ * @param newVirtualNode Single virtual node or array of virtual nodes
  */
 export function applyDiff(parent: Node, newVirtualNode: VNode | VNode[]): void {
   const newVNodes = Array.isArray(newVirtualNode)
@@ -17,9 +17,9 @@ export function applyDiff(parent: Node, newVirtualNode: VNode | VNode[]): void {
 }
 
 /**
- * Diffs and updates the children of a DOM node based on the new virtual nodes.
- * @param parent The parent DOM node whose children will be diffed.
- * @param childVNodes An array of new virtual nodes.
+ * Updates the children of a DOM node by comparing with new virtual nodes.
+ * @param parent Parent DOM node whose children will be diffed
+ * @param childVNodes Array of new virtual nodes
  */
 function diffChildren(parent: Node, childVNodes: VNode[]): void {
   const flattenedVNodes = flattenVNodes(childVNodes);
@@ -85,9 +85,9 @@ function diffChildren(parent: Node, childVNodes: VNode[]): void {
 }
 
 /**
- * Updates a DOM node to match the new virtual node.
- * @param domNode The existing DOM node to be updated.
- * @param newVNode The new virtual node to apply.
+ * Updates an existing DOM node to match a new virtual node.
+ * @param domNode Existing DOM node to update
+ * @param newVNode New virtual node to apply
  */
 function updateNode(domNode: Node, newVNode: VNode): void {
   if (typeof newVNode === "string") {
@@ -171,9 +171,9 @@ function updateNode(domNode: Node, newVNode: VNode): void {
 }
 
 /**
- * Assigns a ref to a node.
- * @param node The DOM node.
- * @param ref The ref to assign.
+ * Assigns a ref to a DOM node.
+ * @param node DOM node to assign the ref to
+ * @param ref Reference to assign (function or object with current property)
  */
 function assignRef(node: Node, ref: any): void {
   const currentRef = (node as any).__webjsx_assignedRef;
@@ -192,18 +192,18 @@ function assignRef(node: Node, ref: any): void {
 }
 
 /**
- * Type guard to check if a VNode is a VElement.
- * @param vnode The virtual node to check.
- * @returns True if vnode is a VElement, false otherwise.
+ * Checks if a virtual node is a VElement.
+ * @param vnode Virtual node to check
+ * @returns True if vnode is a VElement
  */
 function isVElement(vnode: VNode): vnode is VElement {
   return typeof vnode === "object" && vnode !== null && "props" in vnode;
 }
 
 /**
- * Type guard to check if a VNode is a VElement with a key.
- * @param vnode The virtual node to check.
- * @returns True if vnode is a VElement with a key, false otherwise.
+ * Checks if a virtual node is a VElement with a key property.
+ * @param vnode Virtual node to check
+ * @returns True if vnode is a VElement with a key
  */
 function isVElementWithKey(
   vnode: VNode

@@ -3,10 +3,21 @@ import { Fragment, VNode, FragmentType } from "./types.js";
 import { setAttributes } from "./attributes.js";
 import { flattenVNodes } from "./utils.js";
 
+/**
+ * Type guard to check if a node is a Fragment type.
+ * @param type Value to check
+ * @returns True if the type is Fragment
+ */
 function isFragment(type: any): type is FragmentType {
   return type === Fragment;
 }
 
+/**
+ * Creates a real DOM node from a virtual node representation.
+ * @param vnode Virtual node to convert
+ * @param parentNamespaceURI Namespace URI from parent element, if any
+ * @returns Created DOM node
+ */
 export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
   if (
     typeof vnode === "string" ||
@@ -59,7 +70,7 @@ export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
 
     if (vnode.props.children && !vnode.props.dangerouslySetInnerHTML) {
       const children = flattenVNodes(vnode.props.children);
-      
+
       children.forEach((child) => {
         el.appendChild(createNode(child, namespaceURI));
       });
@@ -70,14 +81,14 @@ export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
 }
 
 /**
- * Assigns a ref to a node.
- * @param node The DOM node.
- * @param ref The ref to assign.
+ * Assigns a ref to a DOM node.
+ * @param node Target DOM node
+ * @param ref Reference to assign (function or object with current property)
  */
 function assignRef(node: Node, ref: any): void {
   const currentRef = (node as any).__webjsx_assignedRef;
 
-  // Only assign the ref if it's different
+  // Only assign if the ref is different
   if (currentRef !== ref) {
     if (typeof ref === "function") {
       ref(node);
