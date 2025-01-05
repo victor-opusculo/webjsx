@@ -23,7 +23,9 @@ describe("JSX Syntax - Lists and Keys", () => {
     const vdom = (
       <ul>
         {items.map((item, index) => (
-          <li key={index} data-key={index}>{item}</li>
+          <li key={index} data-key={index}>
+            {item}
+          </li>
         ))}
       </ul>
     );

@@ -20,14 +20,7 @@ describe("JSX Syntax - SVG Rendering", () => {
   it("should render an SVG element with correct namespace", () => {
     const vdom = (
       <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-        <circle
-          cx="50"
-          cy="50"
-          r="40"
-          stroke="black"
-          strokeWidth="3"
-          fill="red"
-        />
+        <circle cx="50" cy="50" r="40" />
       </svg>
     );
 
@@ -45,27 +38,13 @@ describe("JSX Syntax - SVG Rendering", () => {
   it("should update an SVG element and maintain the correct namespace", () => {
     const initialVdom = (
       <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-        <circle
-          cx="50"
-          cy="50"
-          r="40"
-          stroke="black"
-          strokeWidth="3"
-          fill="red"
-        />
+        <circle cx="50" cy="50" r="40" />
       </svg>
     );
 
     const updatedVdom = (
       <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-        <circle
-          cx="100"
-          cy="100"
-          r="80"
-          stroke="blue"
-          strokeWidth="5"
-          fill="yellow"
-        />
+        <circle cx="100" cy="100" r="80" />
       </svg>
     );
 

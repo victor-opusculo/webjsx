@@ -38,7 +38,7 @@ describe("JSX Syntax - Ref Support", () => {
   });
 
   it("should assign object ref to a JSX element", () => {
-    const refObject: { current: Node | null } = { current: null };
+    const refObject: webjsx.Ref<HTMLSpanElement> = { current: null };
 
     const vdom = (
       <span ref={refObject} id="jsx-ref-span">
