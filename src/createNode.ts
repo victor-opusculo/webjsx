@@ -1,6 +1,6 @@
 import { SVG_NAMESPACE } from "./constants.js";
 import { Fragment, VNode, FragmentType } from "./types.js";
-import { setAttributes } from "./utils.js";
+import { setAttributes } from "./attributes.js";
 
 function isFragment(type: any): type is FragmentType {
   return type === Fragment;

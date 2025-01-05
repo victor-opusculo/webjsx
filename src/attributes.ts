@@ -1,3 +1,4 @@
+import { withRenderSuspension } from "./renderSuspension.js";
 import { VNode, Fragment, WebJSXAwareComponent } from "./types.js";
 
 /**
@@ -56,25 +57,6 @@ function updatePropOrAttr(el: Element, key: string, value: any): void {
     el.setAttribute(key, value);
   } else {
     (el as any)[key] = value;
-  }
-}
-
-/**
- * Handles suspension of rendering during updates
- */
-function withRenderSuspension<T>(el: Element, callback: () => T): T {
-  const isRenderingSuspended = !!(el as WebJSXAwareComponent)
-    .__webjsx_suspendRendering;
-  if (isRenderingSuspended) {
-    (el as WebJSXAwareComponent).__webjsx_suspendRendering!();
-  }
-
-  try {
-    return callback();
-  } finally {
-    if (isRenderingSuspended) {
-      (el as WebJSXAwareComponent).__webjsx_resumeRendering!();
-    }
   }
 }
 

@@ -1,7 +1,7 @@
 import { HTML_NAMESPACE } from "./constants.js";
 import { createNode } from "./createNode.js";
 import { VNode, VElement, Fragment } from "./types.js";
-import { updateAttributes } from "./utils.js";
+import { updateAttributes } from "./attributes.js";
 
 /**
  * Applies the differences between the new virtual node(s) and the existing DOM.
