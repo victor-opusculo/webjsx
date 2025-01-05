@@ -1,4 +1,4 @@
-import { ChildTypes, Fragment, VElement, VNode } from "./types.js";
+import { ChildTypes, Fragment, VElement, VNode, VRealNode } from "./types.js";
 
 /**
  * Checks if a virtual node is a Fragment.
@@ -14,9 +14,9 @@ export function isFragment(vnode: VNode | null | undefined): vnode is VElement {
  * @param vnodes Virtual nodes to flatten
  * @returns Array of flattened virtual nodes
  */
-export function flattenVNodes(vnodes: ChildTypes): VNode[] {
+export function flattenVNodes(vnodes: ChildTypes): VRealNode[] {
   if (Array.isArray(vnodes)) {
-    const flat: VNode[] = [];
+    const flat: VRealNode[] = [];
 
     vnodes.forEach((vnode) => {
       if (Array.isArray(vnode)) {
@@ -34,6 +34,12 @@ export function flattenVNodes(vnodes: ChildTypes): VNode[] {
       }
     });
 
+    return flat;
+  } else if (isFragment(vnodes)) {
+    const flat: VRealNode[] = [];
+    const children = vnodes.props.children ? vnodes.props.children : [];
+    // Recursively flatten nested fragments
+    flat.push(...flattenVNodes(children));
     return flat;
   } else if (vnodes !== null && vnodes !== undefined) {
     return [vnodes];

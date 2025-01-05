@@ -35,12 +35,19 @@ export interface ElementProps {
 /**
  * Virtual element structure.
  */
-export interface VElement {
+export type VElement = {
   type: string | FragmentType;
   props: ElementProps;
-}
+};
 
 export type VNode = VElement | Primitive;
+
+export type VRealElement = {
+  type: string;
+  props: ElementProps;
+};
+
+export type VRealNode = VRealElement | Primitive;
 
 export type ChildTypes = VNode | null | undefined | ChildTypes[];
 

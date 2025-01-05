@@ -1,16 +1,7 @@
-import { SVG_NAMESPACE } from "./constants.js";
-import { Fragment, VNode, FragmentType } from "./types.js";
 import { setAttributes } from "./attributes.js";
+import { SVG_NAMESPACE } from "./constants.js";
+import { VRealNode } from "./types.js";
 import { flattenVNodes } from "./utils.js";
-
-/**
- * Type guard to check if a node is a Fragment type.
- * @param type Value to check
- * @returns True if the type is Fragment
- */
-function isFragment(type: any): type is FragmentType {
-  return type === Fragment;
-}
 
 /**
  * Creates a real DOM node from a virtual node representation.
@@ -18,22 +9,16 @@ function isFragment(type: any): type is FragmentType {
  * @param parentNamespaceURI Namespace URI from parent element, if any
  * @returns Created DOM node
  */
-export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
+export function createNode(
+  vnode: VRealNode,
+  parentNamespaceURI?: string
+): Node {
   if (
     typeof vnode === "string" ||
     typeof vnode === "number" ||
     typeof vnode === "boolean"
   ) {
     return document.createTextNode(String(vnode));
-  } else if (isFragment(vnode.type)) {
-    const fragment = document.createDocumentFragment();
-    if (vnode.props.children) {
-      const children = flattenVNodes(vnode.props.children);
-      children.forEach((child) => {
-        fragment.appendChild(createNode(child, undefined));
-      });
-    }
-    return fragment;
   } else {
     const namespaceURI =
       vnode.props.xmlns !== undefined

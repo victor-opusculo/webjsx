@@ -1,5 +1,4 @@
 import { withRenderSuspension } from "./renderSuspension.js";
-import { VNode, Fragment, WebJSXAwareComponent } from "./types.js";
 
 /**
  * Updates an event listener on an element.

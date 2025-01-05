@@ -1,18 +1,16 @@
+import { updateAttributes } from "./attributes.js";
 import { HTML_NAMESPACE } from "./constants.js";
 import { createNode } from "./createNode.js";
-import { VNode, VElement, Fragment } from "./types.js";
-import { updateAttributes } from "./attributes.js";
+import { VNode, VRealElement, VRealNode } from "./types.js";
 import { flattenVNodes } from "./utils.js";
 
 /**
  * Applies the differences between new virtual node(s) and the existing DOM.
  * @param parent Parent DOM node where the virtual nodes will be applied
- * @param newVirtualNode Single virtual node or array of virtual nodes
+ * @param vnodes Single virtual node or array of virtual nodes
  */
-export function applyDiff(parent: Node, newVirtualNode: VNode | VNode[]): void {
-  const newVNodes = Array.isArray(newVirtualNode)
-    ? newVirtualNode
-    : [newVirtualNode];
+export function applyDiff(parent: Node, vnodes: VNode | VNode[]): void {
+  const newVNodes = flattenVNodes(vnodes);
   diffChildren(parent, newVNodes);
 }
 
@@ -21,7 +19,7 @@ export function applyDiff(parent: Node, newVirtualNode: VNode | VNode[]): void {
  * @param parent Parent DOM node whose children will be diffed
  * @param childVNodes Array of new virtual nodes
  */
-function diffChildren(parent: Node, childVNodes: VNode[]): void {
+function diffChildren(parent: Node, childVNodes: VRealNode[]): void {
   const flattenedVNodes = flattenVNodes(childVNodes);
   const keyedMap = new Map<string | number, Node>();
   const childNodes = parent.childNodes;
@@ -36,7 +34,7 @@ function diffChildren(parent: Node, childVNodes: VNode[]): void {
   }
 
   const newKeys = flattenedVNodes
-    .filter(isVElementWithKey)
+    .filter(isVRealElementWithKey)
     .map((vnode) => vnode.props.key);
 
   // Remove nodes that are no longer needed
@@ -49,7 +47,7 @@ function diffChildren(parent: Node, childVNodes: VNode[]): void {
   }
 
   flattenedVNodes.forEach((newVNode, i) => {
-    const newKey = isVElement(newVNode) ? newVNode.props.key : undefined;
+    const newKey = isVRealElement(newVNode) ? newVNode.props.key : undefined;
     let existingNode: Node | null = null;
 
     if (newKey !== undefined) {
@@ -67,7 +65,7 @@ function diffChildren(parent: Node, childVNodes: VNode[]): void {
       updateNode(existingNode, newVNode);
     } else {
       const newDomNode = createNode(newVNode, getNamespaceURI(parent));
-      if (isVElement(newVNode) && newVNode.props.key !== undefined) {
+      if (isVRealElement(newVNode) && newVNode.props.key !== undefined) {
         (newDomNode as any).__webjsx_key = newVNode.props.key;
         (newDomNode as HTMLElement).setAttribute(
           "data-key",
@@ -89,7 +87,7 @@ function diffChildren(parent: Node, childVNodes: VNode[]): void {
  * @param domNode Existing DOM node to update
  * @param newVNode New virtual node to apply
  */
-function updateNode(domNode: Node, newVNode: VNode): void {
+function updateNode(domNode: Node, newVNode: VRealNode): void {
   if (typeof newVNode === "string") {
     if (
       domNode.nodeType !== Node.TEXT_NODE ||
@@ -112,19 +110,6 @@ function updateNode(domNode: Node, newVNode: VNode): void {
     return;
   }
 
-  if (newVNode.type === Fragment) {
-    const fragment = document.createDocumentFragment();
-
-    const children = flattenVNodes(newVNode.props.children);
-
-    children.forEach((child) => {
-      fragment.appendChild(createNode(child, undefined));
-    });
-
-    domNode.parentNode?.replaceChild(fragment, domNode);
-    return;
-  }
-
   if (
     domNode instanceof HTMLElement &&
     domNode.tagName.toLowerCase() === (newVNode.type as string).toLowerCase()
@@ -133,7 +118,7 @@ function updateNode(domNode: Node, newVNode: VNode): void {
     const newProps = newVNode.props || {};
     updateAttributes(domNode, newProps, oldProps);
 
-    if (isVElement(newVNode) && newVNode.props.key !== undefined) {
+    if (isVRealElement(newVNode) && newVNode.props.key !== undefined) {
       (domNode as any).__webjsx_key = newVNode.props.key;
       domNode.setAttribute("data-key", String(newVNode.props.key));
     } else {
@@ -155,7 +140,7 @@ function updateNode(domNode: Node, newVNode: VNode): void {
       domNode.parentNode ? getNamespaceURI(domNode.parentNode) : undefined
     );
 
-    if (isVElement(newVNode) && newVNode.props.key !== undefined) {
+    if (isVRealElement(newVNode) && newVNode.props.key !== undefined) {
       (newDomNode as any).__webjsx_key = newVNode.props.key;
       (newDomNode as HTMLElement).setAttribute(
         "data-key",
@@ -163,7 +148,7 @@ function updateNode(domNode: Node, newVNode: VNode): void {
       );
     }
 
-    if (isVElement(newVNode) && newVNode.props.ref) {
+    if (isVRealElement(newVNode) && newVNode.props.ref) {
       assignRef(newDomNode, newVNode.props.ref);
     }
 
@@ -197,7 +182,7 @@ function assignRef(node: Node, ref: any): void {
  * @param vnode Virtual node to check
  * @returns True if vnode is a VElement
  */
-function isVElement(vnode: VNode): vnode is VElement {
+function isVRealElement(vnode: VRealNode): vnode is VRealElement {
   return typeof vnode === "object" && vnode !== null && "props" in vnode;
 }
 
@@ -206,10 +191,10 @@ function isVElement(vnode: VNode): vnode is VElement {
  * @param vnode Virtual node to check
  * @returns True if vnode is a VElement with a key
  */
-function isVElementWithKey(
-  vnode: VNode
-): vnode is VElement & { props: { key: string | number } } {
-  return isVElement(vnode) && vnode.props.key !== undefined;
+function isVRealElementWithKey(
+  vnode: VRealNode
+): vnode is VRealElement & { props: { key: string | number } } {
+  return isVRealElement(vnode) && vnode.props.key !== undefined;
 }
 
 function getNamespaceURI(node: Node): string | undefined {
