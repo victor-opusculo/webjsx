@@ -2,6 +2,7 @@ import { HTML_NAMESPACE } from "./constants.js";
 import { createNode } from "./createNode.js";
 import { VNode, VElement, Fragment } from "./types.js";
 import { updateAttributes } from "./attributes.js";
+import { flattenVNodes } from "./utils.js";
 
 /**
  * Applies the differences between the new virtual node(s) and the existing DOM.
@@ -16,43 +17,15 @@ export function applyDiff(parent: Node, newVirtualNode: VNode | VNode[]): void {
 }
 
 /**
- * Flattens the list of virtual nodes by recursively replacing Fragments with their children.
- * @param vnodes The array of virtual nodes to flatten.
- * @returns A new array of virtual nodes with all Fragments flattened.
- */
-function flattenVNodes(vnodes: VNode[]): VNode[] {
-  const flat: VNode[] = [];
-  const arrayVNodes = vnodes;
-
-  arrayVNodes.forEach((vnode) => {
-    if (isFragment(vnode)) {
-      const children = vnode.props.children ? vnode.props.children : [];
-      // Recursively flatten any nested fragments
-      flat.push(...flattenVNodes(children));
-    } else {
-      flat.push(vnode);
-    }
-  });
-
-  return flat;
-}
-
-/**
- * Type guard to check if a VNode is a Fragment.
- * @param vnode The virtual node to check.
- * @returns True if vnode is a Fragment, false otherwise.
- */
-function isFragment(vnode: VNode): vnode is VElement {
-  return typeof vnode === "object" && vnode !== null && vnode.type === Fragment;
-}
-
-/**
  * Diffs and updates the children of a DOM node based on the new virtual nodes.
  * @param parent The parent DOM node whose children will be diffed.
- * @param newVNodes An array of new virtual nodes.
+ * @param childVNodes An array of new virtual nodes.
  */
-function diffChildren(parent: Node, newVNodes: VNode[]): void {
-  const flattenedVNodes = flattenVNodes(newVNodes);
+function diffChildren(
+  parent: Node,
+  childVNodes: VNode | VNode[] | null | undefined
+): void {
+  const flattenedVNodes = flattenVNodes(childVNodes);
   const keyedMap = new Map<string | number, Node>();
   const childNodes = parent.childNodes;
 
@@ -144,10 +117,13 @@ function updateNode(domNode: Node, newVNode: VNode): void {
 
   if (newVNode.type === Fragment) {
     const fragment = document.createDocumentFragment();
-    const children = newVNode.props.children ? newVNode.props.children : [];
+
+    const children = flattenVNodes(newVNode.props.children);
+
     children.forEach((child) => {
       fragment.appendChild(createNode(child, undefined));
     });
+
     domNode.parentNode?.replaceChild(fragment, domNode);
     return;
   }

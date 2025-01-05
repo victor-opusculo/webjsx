@@ -1,4 +1,4 @@
-import { FragmentType, VNode, ElementProps, VElement, Ref } from "./types.js";
+import { ElementProps, FragmentType, VElement, VNode } from "./types.js";
 
 declare global {
   namespace JSX {
@@ -23,14 +23,8 @@ declare global {
       [K in Exclude<keyof T, "children">]: T[K] extends Function
         ? T[K]
         : T[K] | string;
-    }> & {
-      xmlns?: string;
-      class?: string;
-      children?: VNode | VNode[] | null;
-      key?: string | number;
-      dangerouslySetInnerHTML?: { __html: string };
-      ref?: Ref<T>;
-    };
+    }> &
+      ElementProps;
 
     type DOMIntrinsicElements = {
       [K in keyof HTMLElementTagNameMap]: ElementAttributesFor<

@@ -1,6 +1,7 @@
 import { SVG_NAMESPACE } from "./constants.js";
 import { Fragment, VNode, FragmentType } from "./types.js";
 import { setAttributes } from "./attributes.js";
+import { flattenVNodes } from "./utils.js";
 
 function isFragment(type: any): type is FragmentType {
   return type === Fragment;
@@ -16,7 +17,7 @@ export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
   } else if (isFragment(vnode.type)) {
     const fragment = document.createDocumentFragment();
     if (vnode.props.children) {
-      const children = vnode.props.children;
+      const children = flattenVNodes(vnode.props.children);
       children.forEach((child) => {
         fragment.appendChild(createNode(child, undefined));
       });
@@ -57,7 +58,8 @@ export function createNode(vnode: VNode, parentNamespaceURI?: string): Node {
     }
 
     if (vnode.props.children && !vnode.props.dangerouslySetInnerHTML) {
-      const children = vnode.props.children;
+      const children = flattenVNodes(vnode.props.children);
+      
       children.forEach((child) => {
         el.appendChild(createNode(child, namespaceURI));
       });

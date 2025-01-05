@@ -10,13 +10,19 @@ export type FragmentType = typeof Fragment;
 
 export type Primitive = string | number | boolean;
 
-export type Ref<T extends Node = Node> = ((node: T | null) => void) | { current: T | null };
+export type Ref<T extends Node = Node> =
+  | ((node: T | null) => void)
+  | { current: T | null };
 
 export interface ElementProps {
   [key: string]: any;
-  children?: VNode[];
+
+  xmlns?: string;
+  class?: string;
+  children?: VNode | VNode[] | null;
   key?: string | number;
   dangerouslySetInnerHTML?: { __html: string };
+  ref?: Ref<Node>;
 }
 
 export interface VElement {
