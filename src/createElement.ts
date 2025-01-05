@@ -1,14 +1,16 @@
 import { Fragment, VElement, VNode } from "./types.js";
 
+type CreateElementTypes = VNode | null | undefined | Array<CreateElementTypes>;
+
 export function createElement(
   type: string | typeof Fragment,
   props: { [key: string]: any } | null,
-  ...children: any[]
+  ...children: CreateElementTypes[]
 ): VElement {
   const normalizedProps: { [key: string]: any } = props ? { ...props } : {};
   const flatChildren: VNode[] = [];
 
-  const flatten = (child: any) => {
+  function flatten(child: CreateElementTypes) {
     if (Array.isArray(child)) {
       child.forEach(flatten);
     } else if (typeof child === "string" || typeof child === "number") {
@@ -25,7 +27,7 @@ export function createElement(
     } else {
       flatChildren.push(child);
     }
-  };
+  }
 
   children.forEach(flatten);
 

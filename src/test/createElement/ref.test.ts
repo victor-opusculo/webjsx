@@ -39,22 +39,4 @@ describe("createElement - Ref Handling", () => {
       createElement("div", { id: "child-div" }, "Child Content"),
     ]);
   });
-
-  it("should warn if ref is passed as a child in createElement", () => {
-    let consoleWarnCalled = false;
-    const originalWarn = console.warn;
-    console.warn = () => {
-      consoleWarnCalled = true;
-    };
-
-    const ref: Ref = (node) => {};
-    const vdom = createElement("div", { id: "test-div" }, "Text", ref);
-
-    // Since refs are handled separately, passing a ref as a child should not trigger a warning
-    expect(consoleWarnCalled).to.be.false;
-    expect((vdom as VElement).props.children).to.deep.equal(["Text", ref]);
-
-    // Restore original console.warn
-    console.warn = originalWarn;
-  });
 });
