@@ -146,7 +146,8 @@ function updateNode(domNode: Node, newVNode: VNode): void {
     }
 
     if (!newProps.dangerouslySetInnerHTML && newProps.children !== undefined) {
-      diffChildren(domNode, flattenVNodes(newProps.children));
+      const children = flattenVNodes(newProps.children);
+      diffChildren(domNode, children);
     }
   } else {
     const newDomNode = createNode(

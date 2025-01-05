@@ -42,6 +42,8 @@ export interface VElement {
 
 export type VNode = VElement | Primitive;
 
+export type ChildTypes = VNode | null | undefined | ChildTypes[];
+
 /**
  * Interface for components that support render suspension.
  */

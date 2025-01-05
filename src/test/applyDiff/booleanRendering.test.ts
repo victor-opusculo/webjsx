@@ -22,7 +22,7 @@ describe("applyDiff - Boolean Rendering", () => {
   });
 
   it("should handle boolean values in arrays", () => {
-    const vdom = createElement("div", null, ["Start", false, "End"]);
+    const vdom = createElement("div", null, ...["Start", false, "End"]);
     applyDiff(container, vdom);
 
     const div = container.querySelector("div");

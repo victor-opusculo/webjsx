@@ -1,6 +1,5 @@
-import { Fragment, VElement, VNode } from "./types.js";
-
-type CreateElementTypes = VNode | null | undefined | Array<CreateElementTypes>;
+import { ChildTypes, Fragment, VElement, VNode } from "./types.js";
+import { flattenVNodes } from "./utils.js";
 
 /**
  * Creates a virtual element representing a DOM node or Fragment.
@@ -12,28 +11,10 @@ type CreateElementTypes = VNode | null | undefined | Array<CreateElementTypes>;
 export function createElement(
   type: string | typeof Fragment,
   props: { [key: string]: any } | null,
-  ...children: CreateElementTypes[]
+  ...children: ChildTypes[]
 ): VElement {
   const normalizedProps: { [key: string]: any } = props ? { ...props } : {};
-  const flatChildren: VNode[] = [];
-
-  function flatten(child: CreateElementTypes) {
-    if (Array.isArray(child)) {
-      child.forEach(flatten);
-    } else if (typeof child === "string" || typeof child === "number") {
-      flatChildren.push(child);
-    } else if (
-      child === null ||
-      child === undefined ||
-      typeof child === "boolean"
-    ) {
-      // Skip null, undefined, and boolean children
-    } else {
-      flatChildren.push(child);
-    }
-  }
-
-  children.forEach(flatten);
+  const flatChildren: VNode[] = flattenVNodes(children);
 
   if (flatChildren.length > 0) {
     // Set children property only if dangerouslySetInnerHTML is not present
