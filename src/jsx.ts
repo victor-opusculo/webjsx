@@ -10,20 +10,6 @@ declare global {
     }
 
     /**
-     * Defines how component props are typed
-     */
-    interface ElementAttributesProperty {
-      props: ElementProps;
-    }
-
-    /**
-     * Defines the children property type
-     */
-    interface ElementChildrenAttribute {
-      children: VNode[];
-    }
-
-    /**
      * Base interface for JSX elements
      */
     interface Element extends VElement {

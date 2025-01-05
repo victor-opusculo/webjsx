@@ -1,4 +1,4 @@
-import { ChildTypes, Fragment, VElement, VNode } from "./types.js";
+import { ChildTypes, Fragment, VElement, VNode, VRealNode } from "./types.js";
 import { flattenVNodes } from "./utils.js";
 
 /**
@@ -14,7 +14,7 @@ export function createElement(
   ...children: ChildTypes[]
 ): VElement {
   const normalizedProps: { [key: string]: any } = props ? { ...props } : {};
-  const flatChildren: VNode[] = flattenVNodes(children);
+  const flatChildren: VRealNode[] = flattenVNodes(children);
 
   if (flatChildren.length > 0) {
     // Set children property only if dangerouslySetInnerHTML is not present

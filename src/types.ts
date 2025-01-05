@@ -1,9 +1,7 @@
-export const Fragment = (props: { children?: VNode | VNode[] }): VNode[] => {
-  return props.children
-    ? Array.isArray(props.children)
-      ? props.children
-      : [props.children]
-    : [];
+import { flattenVNodes } from "./utils.js";
+
+export const Fragment = (props: { children?: ChildTypes }): VNode[] => {
+  return flattenVNodes(props.children);
 };
 
 export type FragmentType = typeof Fragment;

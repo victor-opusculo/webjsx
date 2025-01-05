@@ -19,8 +19,7 @@ export function applyDiff(parent: Node, vnodes: VNode | VNode[]): void {
  * @param parent Parent DOM node whose children will be diffed
  * @param childVNodes Array of new virtual nodes
  */
-function diffChildren(parent: Node, childVNodes: VRealNode[]): void {
-  const flattenedVNodes = flattenVNodes(childVNodes);
+function diffChildren(parent: Node, flattenedVNodes: VRealNode[]): void {
   const keyedMap = new Map<string | number, Node>();
   const childNodes = parent.childNodes;
 
@@ -130,7 +129,11 @@ function updateNode(domNode: Node, newVNode: VRealNode): void {
       assignRef(domNode, newProps.ref);
     }
 
-    if (!newProps.dangerouslySetInnerHTML && newProps.children !== undefined) {
+    if (
+      !newProps.dangerouslySetInnerHTML &&
+      newProps.children !== undefined &&
+      newProps.children !== null
+    ) {
       const children = flattenVNodes(newProps.children);
       diffChildren(domNode, children);
     }
