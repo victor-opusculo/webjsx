@@ -62,14 +62,6 @@ describe("JSX Syntax - Lists and Keys", () => {
 
     applyDiff(container, initialVdom);
 
-    // Store initial keys and text content
-    const initialElements = Array.from(container.querySelectorAll("li")).map(
-      (li) => ({
-        key: (li as any).__webjsx_key,
-        text: li.textContent,
-      })
-    );
-
     // Reverse the order
     const reversedVdom = (
       <ul>
@@ -123,14 +115,6 @@ describe("JSX Syntax - Lists and Keys", () => {
     );
 
     applyDiff(container, initialVdom);
-
-    // Store initial state of keyed elements
-    const initialKeyedElements = Array.from(container.querySelectorAll("li"))
-      .filter((li) => (li as any).__webjsx_key)
-      .map((li) => ({
-        key: (li as any).__webjsx_key,
-        text: li.textContent,
-      }));
 
     // Reorder keyed elements and change non-keyed elements
     const reorderedVdom = (
@@ -260,11 +244,6 @@ describe("JSX Syntax - Lists and Keys", () => {
     );
 
     applyDiff(container, initialVdom);
-
-    // Store initial keys
-    const initialKeys = Array.from(container.querySelectorAll("li")).map(
-      (li) => (li as any).__webjsx_key
-    );
 
     // Insert new elements between existing ones and remove one
     const modifiedVdom = (
