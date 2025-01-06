@@ -36,9 +36,9 @@ describe("JSX Syntax - Lists and Keys", () => {
     expect(ul).to.exist;
     const lis = ul?.querySelectorAll("li");
     expect(lis).to.have.lengthOf(3);
-    expect(lis?.[0].getAttribute("data-key")).to.equal("0");
-    expect(lis?.[1].getAttribute("data-key")).to.equal("1");
-    expect(lis?.[2].getAttribute("data-key")).to.equal("2");
+    expect((lis?.[0] as any).__webjsx_key).to.equal(0);
+    expect((lis?.[1] as any).__webjsx_key).to.equal(1);
+    expect((lis?.[2] as any).__webjsx_key).to.equal(2);
     expect(lis?.[0].textContent).to.equal("Apple");
     expect(lis?.[1].textContent).to.equal("Banana");
     expect(lis?.[2].textContent).to.equal("Cherry");

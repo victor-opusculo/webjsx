@@ -90,8 +90,8 @@ describe("applyDiff - Boolean Rendering", () => {
 
     const spans = container.querySelectorAll("span");
     expect(spans).to.have.lengthOf(2);
-    expect(spans[0].getAttribute("data-key")).to.equal("1");
-    expect(spans[1].getAttribute("data-key")).to.equal("2");
+    expect((spans[0] as any).__webjsx_key).to.equal("1");
+    expect((spans[1] as any).__webjsx_key).to.equal("2");
   });
 
   it("should handle true values the same as false", () => {

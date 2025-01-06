@@ -1,5 +1,9 @@
 import { WebJSXAwareComponent } from "./types.js";
 
+export function definesRenderSuspension<T>(el: Element) {
+  return !!(el as WebJSXAwareComponent).__webjsx_suspendRendering;
+}
+
 /**
  * Executes a callback with render suspension handling.
  * @param el Element that may have render suspension

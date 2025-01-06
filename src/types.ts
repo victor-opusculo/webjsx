@@ -37,6 +37,7 @@ export interface ElementProps {
  */
 export type VElement = {
   type: string | FragmentType;
+  tagName?: string;
   props: ElementProps;
 };
 
@@ -44,6 +45,7 @@ export type VNode = VElement | Primitive;
 
 export type VRealElement = {
   type: string;
+  tagName: string;
   props: ElementProps;
 };
 

@@ -29,6 +29,7 @@ export function createElement(
 
   return {
     type,
+    tagName: typeof type === "string" ? type.toUpperCase() : undefined,
     props: normalizedProps,
   };
 }

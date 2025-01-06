@@ -1,4 +1,7 @@
-import { withRenderSuspension } from "./renderSuspension.js";
+import {
+  definesRenderSuspension,
+  withRenderSuspension,
+} from "./renderSuspension.js";
 
 /**
  * Updates an event listener on an element.
@@ -153,9 +156,13 @@ export function setAttributes(
   el: Element,
   props: { [key: string]: any }
 ): void {
-  withRenderSuspension(el, () => {
+  if (definesRenderSuspension(el)) {
+    withRenderSuspension(el, () => {
+      updateAttributesCore(el, props);
+    });
+  } else {
     updateAttributesCore(el, props);
-  });
+  }
 }
 
 /**
@@ -169,7 +176,11 @@ export function updateAttributes(
   newProps: { [key: string]: any },
   oldProps: { [key: string]: any }
 ): void {
-  withRenderSuspension(el, () => {
+  if (definesRenderSuspension(el)) {
+    withRenderSuspension(el, () => {
+      updateAttributesCore(el, newProps, oldProps);
+    });
+  } else {
     updateAttributesCore(el, newProps, oldProps);
-  });
+  }
 }

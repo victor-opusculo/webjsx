@@ -44,7 +44,6 @@ export function createNode(
 
     if (vnode.props.key !== undefined) {
       (el as any).__webjsx_key = vnode.props.key;
-      el.setAttribute("data-key", vnode.props.key.toString());
     }
 
     if (vnode.props.ref) {

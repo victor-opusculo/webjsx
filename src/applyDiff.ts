@@ -5,9 +5,9 @@ import { VNode, VRealElement, VRealNode } from "./types.js";
 import { flattenVNodes } from "./utils.js";
 
 /**
- * Applies the differences between new virtual node(s) and the existing DOM.
- * @param parent Parent DOM node where the virtual nodes will be applied
- * @param vnodes Single virtual node or array of virtual nodes
+ * Applies virtual DOM diffing to update the real DOM based on new virtual nodes.
+ * @param parent The parent DOM node to update
+ * @param vnodes New virtual nodes to apply
  */
 export function applyDiff(parent: Node, vnodes: VNode | VNode[]): void {
   const newVNodes = flattenVNodes(vnodes);
@@ -15,41 +15,31 @@ export function applyDiff(parent: Node, vnodes: VNode | VNode[]): void {
 }
 
 /**
- * Updates the children of a DOM node by comparing with new virtual nodes.
- * @param parent Parent DOM node whose children will be diffed
- * @param childVNodes Array of new virtual nodes
+ * Recursively updates child nodes by comparing current DOM nodes with new virtual nodes.
+ * Uses a keyed map for efficient node reordering and reuse.
+ * @param parent The parent DOM node containing children to diff
+ * @param flattenedVNodes Array of flattened virtual nodes to compare against
  */
 function diffChildren(parent: Node, flattenedVNodes: VRealNode[]): void {
-  const keyedMap = new Map<string | number, Node>();
   const childNodes = parent.childNodes;
-
-  // Populate keyedMap with existing keyed nodes
-  for (let i = 0; i < childNodes.length; i++) {
-    const node = childNodes[i];
-    const key = (node as any).__webjsx_key;
-    if (key !== undefined) {
-      keyedMap.set(key, node);
-    }
-  }
-
-  const newKeys = flattenedVNodes
-    .filter(isVRealElementWithKey)
-    .map((vnode) => vnode.props.key);
-
-  // Remove nodes that are no longer needed
-  for (let i = childNodes.length - 1; i >= 0; i--) {
-    const node = childNodes[i];
-    const key = (node as any).__webjsx_key;
-    if (key !== undefined && !newKeys.includes(key)) {
-      parent.removeChild(node);
-    }
-  }
+  let keyedMap: Map<string | number, Node> | null = null;
 
   flattenedVNodes.forEach((newVNode, i) => {
     const newKey = isVRealElement(newVNode) ? newVNode.props.key : undefined;
     let existingNode: Node | null = null;
 
     if (newKey !== undefined) {
+      // Lazily initialize keyedMap only when first keyed node is encountered
+      if (!keyedMap) {
+        keyedMap = new Map();
+        for (let i = 0; i < childNodes.length; i++) {
+          const node = childNodes[i];
+          const key = (node as any).__webjsx_key;
+          if (key !== undefined) {
+            keyedMap.set(key, node);
+          }
+        }
+      }
       existingNode = keyedMap.get(newKey) || null;
     }
 
@@ -66,16 +56,12 @@ function diffChildren(parent: Node, flattenedVNodes: VRealNode[]): void {
       const newDomNode = createNode(newVNode, getNamespaceURI(parent));
       if (isVRealElement(newVNode) && newVNode.props.key !== undefined) {
         (newDomNode as any).__webjsx_key = newVNode.props.key;
-        (newDomNode as HTMLElement).setAttribute(
-          "data-key",
-          newVNode.props.key.toString()
-        );
       }
       parent.insertBefore(newDomNode, childNodes[i] || null);
     }
   });
 
-  // Remove excess nodes
+  // Remove any remaining old nodes that weren't reused
   while (childNodes.length > flattenedVNodes.length) {
     parent.removeChild(parent.lastChild!);
   }
@@ -83,6 +69,7 @@ function diffChildren(parent: Node, flattenedVNodes: VRealNode[]): void {
 
 /**
  * Updates an existing DOM node to match a new virtual node.
+ * Handles text nodes, element attributes, children, and node replacement.
  * @param domNode Existing DOM node to update
  * @param newVNode New virtual node to apply
  */
@@ -93,7 +80,7 @@ function updateNode(domNode: Node, newVNode: VRealNode): void {
       domNode.textContent !== newVNode
     ) {
       const newTextNode = document.createTextNode(newVNode);
-      domNode.parentNode?.insertBefore(newTextNode, domNode);
+      domNode.parentNode!.insertBefore(newTextNode, domNode);
     }
     return;
   }
@@ -104,38 +91,62 @@ function updateNode(domNode: Node, newVNode: VRealNode): void {
       domNode.textContent !== newVNode.toString()
     ) {
       const newTextNode = document.createTextNode(newVNode.toString());
-      domNode.parentNode?.insertBefore(newTextNode, domNode);
+      domNode.parentNode!.insertBefore(newTextNode, domNode);
     }
     return;
   }
 
-  if (
-    domNode instanceof HTMLElement &&
-    domNode.tagName.toLowerCase() === (newVNode.type as string).toLowerCase()
-  ) {
-    const oldProps = (domNode as any).__webjsx_props || {};
-    const newProps = newVNode.props || {};
-    updateAttributes(domNode, newProps, oldProps);
-
-    if (isVRealElement(newVNode) && newVNode.props.key !== undefined) {
-      (domNode as any).__webjsx_key = newVNode.props.key;
-      domNode.setAttribute("data-key", newVNode.props.key.toString());
-    } else {
-      delete (domNode as any).__webjsx_key;
-      domNode.removeAttribute("data-key");
-    }
-
-    if (newProps.ref) {
-      assignRef(domNode, newProps.ref);
-    }
+  if (domNode instanceof HTMLElement) {
+    const domNodeKey = (domNode as any).__webjsx_key;
+    const newVNodeKey = newVNode.props.key;
+    const sameTagName = domNode.tagName === newVNode.tagName;
 
     if (
-      !newProps.dangerouslySetInnerHTML &&
-      newProps.children !== undefined &&
-      newProps.children !== null
+      sameTagName &&
+      // Both nodes are unkeyed
+      ((domNodeKey === undefined && newVNodeKey === undefined) ||
+        // Both nodes are keyed and keys match
+        (domNodeKey !== undefined &&
+          newVNodeKey !== undefined &&
+          domNodeKey === newVNodeKey))
     ) {
-      const children = flattenVNodes(newProps.children);
-      diffChildren(domNode, children);
+      const oldProps = (domNode as any).__webjsx_props || {};
+      const newProps = newVNode.props || {};
+      updateAttributes(domNode, newProps, oldProps);
+
+      if (isVRealElement(newVNode) && newVNode.props.key !== undefined) {
+        (domNode as any).__webjsx_key = newVNode.props.key;
+      } else {
+        delete (domNode as any).__webjsx_key;
+      }
+
+      if (newProps.ref) {
+        assignRef(domNode, newProps.ref);
+      }
+
+      if (
+        !newProps.dangerouslySetInnerHTML &&
+        newProps.children !== undefined &&
+        newProps.children !== null
+      ) {
+        const children = flattenVNodes(newProps.children);
+        diffChildren(domNode, children);
+      }
+    } else {
+      const newDomNode = createNode(
+        newVNode,
+        domNode.parentNode ? getNamespaceURI(domNode.parentNode) : undefined
+      );
+
+      if (isVRealElement(newVNode) && newVNode.props.key !== undefined) {
+        (newDomNode as any).__webjsx_key = newVNode.props.key;
+      }
+
+      if (isVRealElement(newVNode) && newVNode.props.ref) {
+        assignRef(newDomNode, newVNode.props.ref);
+      }
+
+      domNode.parentNode!.insertBefore(newDomNode, domNode);
     }
   } else {
     const newDomNode = createNode(
@@ -145,61 +156,48 @@ function updateNode(domNode: Node, newVNode: VRealNode): void {
 
     if (isVRealElement(newVNode) && newVNode.props.key !== undefined) {
       (newDomNode as any).__webjsx_key = newVNode.props.key;
-      (newDomNode as HTMLElement).setAttribute(
-        "data-key",
-        newVNode.props.key.toString()
-      );
     }
 
     if (isVRealElement(newVNode) && newVNode.props.ref) {
       assignRef(newDomNode, newVNode.props.ref);
     }
 
-    domNode.parentNode?.insertBefore(newDomNode, domNode);
+    domNode.parentNode!.insertBefore(newDomNode, domNode);
   }
 }
 
 /**
- * Assigns a ref to a DOM node.
- * @param node DOM node to assign the ref to
- * @param ref Reference to assign (function or object with current property)
+ * Assigns a ref to a DOM node, handling both function and object refs.
+ * @param node DOM node to assign ref to
+ * @param ref Ref to assign (function or object)
  */
 function assignRef(node: Node, ref: any): void {
   const currentRef = (node as any).__webjsx_assignedRef;
 
-  // Only assign the ref if it's different
   if (currentRef !== ref) {
     if (typeof ref === "function") {
       ref(node);
     } else if (ref && typeof ref === "object") {
       ref.current = node;
     }
-
-    // Store the assigned ref
     (node as any).__webjsx_assignedRef = ref;
   }
 }
 
 /**
- * Checks if a virtual node is a VElement.
+ * Type guard to check if a virtual node is a VRealElement.
  * @param vnode Virtual node to check
- * @returns True if vnode is a VElement
+ * @returns True if node is a VRealElement
  */
 function isVRealElement(vnode: VRealNode): vnode is VRealElement {
-  return typeof vnode === "object" && vnode !== null && "props" in vnode;
+  return typeof vnode !== "string" && typeof vnode !== "number";
 }
 
 /**
- * Checks if a virtual node is a VElement with a key property.
- * @param vnode Virtual node to check
- * @returns True if vnode is a VElement with a key
+ * Gets the namespace URI for a node, used for SVG elements.
+ * @param node Node to get namespace for
+ * @returns Namespace URI if not HTML, undefined otherwise
  */
-function isVRealElementWithKey(
-  vnode: VRealNode
-): vnode is VRealElement & { props: { key: string | number } } {
-  return isVRealElement(vnode) && vnode.props.key !== undefined;
-}
-
 function getNamespaceURI(node: Node): string | undefined {
   return node instanceof Element && node.namespaceURI !== HTML_NAMESPACE
     ? node.namespaceURI ?? undefined
