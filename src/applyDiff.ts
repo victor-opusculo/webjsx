@@ -106,9 +106,6 @@ function tryUpdateOrCreateNode(
           domNodeKey === newVNodeKey))
     ) {
       const element = nodeAtPosition as HTMLElement;
-      if (element !== nodeAtPosition) {
-        parent.insertBefore(element, nodeAtPosition);
-      }
 
       const oldProps = (element as any).__webjsx_props || {};
       const newProps = newVNode.props || {};
