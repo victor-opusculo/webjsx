@@ -33,3 +33,37 @@ export function createElement(
     props: normalizedProps,
   };
 }
+
+
+// As called from jsx-runtime.jsx function.
+export function createElementJSX(
+  type: string | typeof Fragment,
+  props: { [key: string]: any } | null,
+  key?: string | number
+): VElement {
+  props = props || {};
+
+  const flatChildren: VRealNode[] = props ? flattenVNodes(props.children) : [];
+
+  if (key !== undefined) {
+    props.key = key;
+  }
+
+  if (flatChildren.length > 0) {
+    // Set children property only if dangerouslySetInnerHTML is not present
+    if (!props.dangerouslySetInnerHTML) {
+      props.children = flatChildren;
+    } else {
+      props.children = [];
+      console.warn(
+        "WebJSX: Ignoring children since dangerouslySetInnerHTML is set."
+      );
+    }
+  }
+
+  return {
+    type,
+    tagName: typeof type === "string" ? type.toUpperCase() : undefined,
+    props,
+  };
+}

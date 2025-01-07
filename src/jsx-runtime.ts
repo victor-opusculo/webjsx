@@ -1,4 +1,4 @@
-import { createElement } from "./createElement.js";
+import { createElement, createElementJSX } from "./createElement.js";
 import { Fragment } from "./types.js";
 export * from "./jsx.js";
 
@@ -12,12 +12,7 @@ export { Fragment };
  * @returns Virtual element
  */
 export function jsx(type: any, props: any, key: any) {
-  const normalizedProps = { ...props };
-  if (key !== undefined) {
-    normalizedProps.key = key;
-  }
-  const { children, ...restProps } = normalizedProps;
-  return createElement(type, restProps, children);
+  return createElementJSX(type, props, key);
 }
 
 /**
