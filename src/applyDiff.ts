@@ -1,7 +1,12 @@
 import { updateAttributes } from "./attributes.js";
 import { HTML_NAMESPACE } from "./constants.js";
 import { createNode } from "./createNode.js";
-import { VNode, VRealElement, VRealNode } from "./types.js";
+import {
+  VNode,
+  VRealElement,
+  VRealNode,
+  WebJSXManagedElement,
+} from "./types.js";
 import { flattenVNodes } from "./utils.js";
 
 /**
@@ -9,7 +14,7 @@ import { flattenVNodes } from "./utils.js";
  * @param parent The parent DOM node to update
  * @param vnodes New virtual nodes to apply
  */
-export function applyDiff(parent: Node, vnodes: VNode | VNode[]): void {
+export function applyDiff(parent: Node, vnodes: VNode): void {
   const newVNodes = flattenVNodes(vnodes);
   diffChildren(parent, newVNodes);
 }
@@ -21,24 +26,24 @@ export function applyDiff(parent: Node, vnodes: VNode | VNode[]): void {
  * @param flattenedVNodes Array of flattened virtual nodes to compare against
  */
 function diffChildren(parent: Node, flattenedVNodes: VRealNode[]): void {
-  const childNodes = parent.childNodes;
+  let nodeAtPosition: Node | null = parent.firstChild;
   let keyedMap: Map<string | number, Node> | null = null;
 
   for (let i = 0; i < flattenedVNodes.length; i++) {
     const newVNode = flattenedVNodes[i];
     const newKey = isVRealElement(newVNode) ? newVNode.props.key : undefined;
-    let nodeAtPosition: Node | null = childNodes[i] || null;
 
     if (newKey !== undefined) {
       // Lazily initialize keyedMap only when first keyed node is encountered
       if (!keyedMap) {
         keyedMap = new Map();
-        for (let j = i; j < childNodes.length; j++) {
-          const node = childNodes[j];
+        let node: Node | null = nodeAtPosition;
+        while (node) {
           const key = (node as any).__webjsx_key;
           if (key !== undefined) {
             keyedMap.set(key, node);
           }
+          node = node.nextSibling;
         }
       }
       const keyedNode = keyedMap.get(newKey);
@@ -48,12 +53,15 @@ function diffChildren(parent: Node, flattenedVNodes: VRealNode[]): void {
       }
     }
 
-    tryUpdateOrCreateNode(parent, nodeAtPosition, newVNode);
+    const updatedNode = tryUpdateOrCreateNode(parent, nodeAtPosition, newVNode);
+    nodeAtPosition = updatedNode.nextSibling;
   }
 
   // Remove any remaining old nodes that weren't reused
-  while (childNodes.length > flattenedVNodes.length) {
-    parent.removeChild(parent.lastChild!);
+  while (nodeAtPosition) {
+    const nextNode = nodeAtPosition.nextSibling;
+    parent.removeChild(nodeAtPosition);
+    nodeAtPosition = nextNode;
   }
 }
 
@@ -68,28 +76,34 @@ function tryUpdateOrCreateNode(
   parent: Node,
   nodeAtPosition: Node | null,
   newVNode: VRealNode
-): void {
+): Node {
   if (nodeAtPosition) {
     if (typeof newVNode === "string") {
+      // Node.TEXT_NODE = 3
       if (
-        nodeAtPosition.nodeType !== Node.TEXT_NODE ||
+        nodeAtPosition.nodeType !== 3 ||
         nodeAtPosition.textContent !== newVNode
       ) {
         const newTextNode = document.createTextNode(newVNode);
         parent.insertBefore(newTextNode, nodeAtPosition);
+        return newTextNode;
+      } else {
+        return nodeAtPosition;
       }
-      return;
     }
 
     if (typeof newVNode === "number") {
+      // Node.TEXT_NODE = 3
       if (
-        nodeAtPosition.nodeType !== Node.TEXT_NODE ||
+        nodeAtPosition.nodeType !== 3 ||
         nodeAtPosition.textContent !== newVNode.toString()
       ) {
         const newTextNode = document.createTextNode(newVNode.toString());
         parent.insertBefore(newTextNode, nodeAtPosition);
+        return newTextNode;
+      } else {
+        return nodeAtPosition;
       }
-      return;
     }
 
     // Try to update existing element
@@ -106,9 +120,9 @@ function tryUpdateOrCreateNode(
           newVNodeKey !== undefined &&
           domNodeKey === newVNodeKey))
     ) {
-      const element = nodeAtPosition as HTMLElement;
+      const element = nodeAtPosition as Element;
 
-      const oldProps = (element as any).__webjsx_props || {};
+      const oldProps = (element as WebJSXManagedElement).__webjsx_props || {};
       const newProps = newVNode.props || {};
       updateAttributes(element, newProps, oldProps);
 
@@ -130,7 +144,7 @@ function tryUpdateOrCreateNode(
         const children = flattenVNodes(newProps.children);
         diffChildren(element, children);
       }
-      return;
+      return nodeAtPosition;
     }
   }
 
@@ -145,6 +159,7 @@ function tryUpdateOrCreateNode(
     }
   }
   parent.insertBefore(newDomNode, nodeAtPosition);
+  return newDomNode;
 }
 
 /**

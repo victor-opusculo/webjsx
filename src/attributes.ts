@@ -2,6 +2,7 @@ import {
   definesRenderSuspension,
   withRenderSuspension,
 } from "./renderSuspension.js";
+import { ElementProps, WebJSXManagedElement } from "./types.js";
 
 /**
  * Updates an event listener on an element.
@@ -77,8 +78,8 @@ function updatePropOrAttr(el: Element, key: string, value: any): void {
  */
 function updateAttributesCore(
   el: Element,
-  newProps: { [key: string]: any },
-  oldProps: { [key: string]: any } = {}
+  newProps: ElementProps,
+  oldProps: ElementProps = {}
 ): void {
   // Handle new/updated props
   for (const key of Object.keys(newProps)) {
@@ -106,7 +107,7 @@ function updateAttributesCore(
 
   // Handle dangerouslySetInnerHTML
   if ("dangerouslySetInnerHTML" in newProps) {
-    const html = newProps.dangerouslySetInnerHTML.__html || "";
+    const html = newProps.dangerouslySetInnerHTML!.__html || "";
     el.innerHTML = html;
   } else if ("dangerouslySetInnerHTML" in oldProps) {
     el.innerHTML = "";
@@ -136,7 +137,7 @@ function updateAttributesCore(
   }
 
   // Store current props for future updates
-  (el as any).__webjsx_props = newProps;
+  (el as WebJSXManagedElement).__webjsx_props = newProps;
 }
 
 /**
@@ -164,7 +165,7 @@ export function setAttributes(
  * @param oldProps Previous properties for comparison
  */
 export function updateAttributes(
-  el: HTMLElement,
+  el: Element,
   newProps: { [key: string]: any },
   oldProps: { [key: string]: any }
 ): void {

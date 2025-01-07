@@ -235,11 +235,13 @@ describe("applyDiff - Ref Support", () => {
       refs[key] = node;
     };
 
-    const initialVdom = [
+    const initialVdom = createElement(
+      Fragment,
+      null,
       createElement("li", { ref: refCallback("item1"), key: "1" }, "Item 1"),
       createElement("li", { ref: refCallback("item2"), key: "2" }, "Item 2"),
-      createElement("li", { ref: refCallback("item3"), key: "3" }, "Item 3"),
-    ];
+      createElement("li", { ref: refCallback("item3"), key: "3" }, "Item 3")
+    );
 
     applyDiff(container, initialVdom);
 
@@ -251,15 +253,17 @@ describe("applyDiff - Ref Support", () => {
     expect(refs["item3"]?.textContent).to.equal("Item 3");
 
     // Reorder the list
-    const updatedVdom = [
+    const updatedVdom = createElement(
+      Fragment,
+      null,
       createElement("li", { ref: refCallback("item3"), key: "3" }, "Item 3"),
       createElement(
         "li",
         { ref: refCallback("item1"), key: "1" },
         "Item 1 Updated"
       ),
-      createElement("li", { ref: refCallback("item2"), key: "2" }, "Item 2"),
-    ];
+      createElement("li", { ref: refCallback("item2"), key: "2" }, "Item 2")
+    );
 
     applyDiff(container, updatedVdom);
 

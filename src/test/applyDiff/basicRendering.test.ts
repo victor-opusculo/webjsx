@@ -1,7 +1,7 @@
 import "../setup.js";
 import { expect } from "chai";
 import { applyDiff } from "../../applyDiff.js";
-import { createElement } from "../../index.js";
+import { createElement, Fragment } from "../../index.js";
 
 describe("applyDiff - Basic Rendering", () => {
   let container: HTMLElement;
@@ -36,11 +36,14 @@ describe("applyDiff - Basic Rendering", () => {
   });
 
   it("should handle multiple root nodes", () => {
-    const vdom = [
+    const vdom = createElement(
+      Fragment,
+      null,
       createElement("h1", null, "Title"),
       createElement("p", null, "Paragraph"),
-      createElement("button", { onclick: () => {} }, "Button"),
-    ];
+      createElement("button", { onclick: () => {} }, "Button")
+    );
+
     applyDiff(container, vdom);
 
     const h1 = container.querySelector("h1");

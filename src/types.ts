@@ -59,4 +59,8 @@ export type ChildTypes = VNode | null | undefined | ChildTypes[];
 export type WebJSXAwareComponent = {
   __webjsx_suspendRendering?: () => void;
   __webjsx_resumeRendering?: () => void;
-} & HTMLElement;
+} & Element;
+
+export type WebJSXManagedElement = {
+  __webjsx_props: ElementProps;
+} & Element;
