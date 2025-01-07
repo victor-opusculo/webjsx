@@ -15,7 +15,7 @@ export function createNode(
 ): Node {
   if (typeof vnode === "string") {
     return document.createTextNode(vnode);
-  } else if (typeof vnode === "number") {
+  } else if (typeof vnode === "number" || typeof vnode === "bigint") {
     return document.createTextNode(vnode.toString());
   } else {
     const namespaceURI =

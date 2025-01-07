@@ -6,9 +6,9 @@ export const Fragment = (props: { children?: ChildTypes }): VNode[] => {
 
 export type FragmentType = typeof Fragment;
 
-export type Primitive = string | number | boolean;
+export type Primitive = string | number | bigint | boolean;
 
-export type NonBooleanPrimitive = string | number;
+export type NonBooleanPrimitive = string | number | bigint;
 
 /**
  * Reference type for DOM nodes.
@@ -26,7 +26,7 @@ export interface ElementProps {
 
   xmlns?: string;
   class?: string;
-  children?: VNode | VNode[] | null;
+  children?: VRealNode[] | null;
   key?: string | number;
   dangerouslySetInnerHTML?: { __html: string };
   ref?: Ref<Node>;
