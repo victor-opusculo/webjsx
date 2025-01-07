@@ -24,7 +24,8 @@ function diffChildren(parent: Node, flattenedVNodes: VRealNode[]): void {
   const childNodes = parent.childNodes;
   let keyedMap: Map<string | number, Node> | null = null;
 
-  flattenedVNodes.forEach((newVNode, i) => {
+  for (let i = 0; i < flattenedVNodes.length; i++) {
+    const newVNode = flattenedVNodes[i];
     const newKey = isVRealElement(newVNode) ? newVNode.props.key : undefined;
     let nodeAtPosition: Node | null = childNodes[i] || null;
 
@@ -32,7 +33,7 @@ function diffChildren(parent: Node, flattenedVNodes: VRealNode[]): void {
       // Lazily initialize keyedMap only when first keyed node is encountered
       if (!keyedMap) {
         keyedMap = new Map();
-        for (let j = 0; j < childNodes.length; j++) {
+        for (let j = i; j < childNodes.length; j++) {
           const node = childNodes[j];
           const key = (node as any).__webjsx_key;
           if (key !== undefined) {
@@ -48,7 +49,7 @@ function diffChildren(parent: Node, flattenedVNodes: VRealNode[]): void {
     }
 
     tryUpdateOrCreateNode(parent, nodeAtPosition, newVNode);
-  });
+  }
 
   // Remove any remaining old nodes that weren't reused
   while (childNodes.length > flattenedVNodes.length) {
