@@ -14,25 +14,25 @@ export function isFragment(vnode: VNode | null | undefined): vnode is VElement {
  * @param vnodes Virtual nodes to flatten
  * @returns Array of flattened virtual nodes
  */
-export function flattenVNodes(vnodes: ChildTypes): VRealNode[] {
+export function flattenVNodes(
+  vnodes: ChildTypes,
+  result: VRealNode[] = []
+): VRealNode[] {
   if (Array.isArray(vnodes)) {
-    const flat: VRealNode[] = [];
-    vnodes.forEach((vnode) => {
-      flat.push(...flattenVNodes(vnode));
-    });
-    return flat;
+    for (const vnode of vnodes) {
+      flattenVNodes(vnode, result);
+    }
   } else if (isFragment(vnodes)) {
-    const flat: VRealNode[] = [];
-    const children = vnodes.props.children ?? [];
-    flat.push(...flattenVNodes(children));
-    return flat;
-  } else if (ignoreVNode(vnodes)) {
-    return [];
-  } else {
-    return [vnodes];
+    const children = vnodes.props.children;
+    if (children !== undefined) {
+      flattenVNodes(children, result);
+    }
+  } else if (!ignoreVNode(vnodes)) {
+    result.push(vnodes);
   }
-}
 
+  return result;
+}
 export function ignoreVNode(vnode: VNode | null | undefined) {
   return vnode === null || vnode === undefined || typeof vnode === "boolean";
 }
