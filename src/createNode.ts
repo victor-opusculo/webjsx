@@ -1,6 +1,6 @@
 import { setAttributes } from "./attributes.js";
 import { SVG_NAMESPACE } from "./constants.js";
-import { VRealNode } from "./types.js";
+import { VRealNode, WebJSXManagedElement } from "./types.js";
 import { flattenVNodes } from "./utils.js";
 
 /**
@@ -57,6 +57,8 @@ export function createNode(
         const child = children[i];
         el.appendChild(createNode(child, namespaceURI));
       }
+
+      (el as WebJSXManagedElement).__webjsx_props = { children };
     }
 
     return el;

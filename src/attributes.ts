@@ -135,9 +135,6 @@ function updateAttributesCore(
       }
     }
   }
-
-  // Store current props for future updates
-  (el as WebJSXManagedElement).__webjsx_props = newProps;
 }
 
 /**

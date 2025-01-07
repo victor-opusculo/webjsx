@@ -51,11 +51,12 @@ function diffChildren(
       const keyedNode = keyedMap.get(newKey);
       if (keyedNode) {
         changes.push({ type: "update", domNode: keyedNode, vnode: newVNode });
+        nodeAtPosition = nodeAtPosition?.nextSibling ?? null;
         continue;
       }
     }
 
-    if (canUpdateVNodes(oldVNode, newVNode) && nodeAtPosition) {
+    if (canUpdateVNodes(newVNode, oldVNode) && nodeAtPosition) {
       changes.push({
         type: "update",
         domNode: nodeAtPosition,
@@ -73,35 +74,28 @@ function diffChildren(
 
   for (const change of changes) {
     if (change.type === "create") {
+      let newNode: Node | undefined = undefined;
       if (isVRealElement(change.vnode)) {
-        const newDomNode = createNode(change.vnode, getNamespaceURI(parent));
+        newNode = createNode(change.vnode, getNamespaceURI(parent));
         if (change.vnode.props.key !== undefined) {
-          (newDomNode as any).__webjsx_key = change.vnode.props.key;
+          (newNode as any).__webjsx_key = change.vnode.props.key;
         }
         if (change.vnode.props.ref) {
-          assignRef(newDomNode, change.vnode.props.ref);
+          assignRef(newNode, change.vnode.props.ref);
         }
-        if (!lastPlacedNode) {
-          parent.prepend(newDomNode);
-        } else {
-          parent.insertBefore(newDomNode, lastPlacedNode?.nextSibling ?? null);
-        }
-
-        lastPlacedNode = newDomNode;
       } else {
-        const newTextNode = document.createTextNode(
+        newNode = document.createTextNode(
           typeof change.vnode === "number" || typeof change.vnode === "bigint"
             ? change.vnode.toString()
             : change.vnode
         );
-        if (!lastPlacedNode) {
-          parent.prepend(newTextNode);
-        } else {
-          parent.insertBefore(newTextNode, lastPlacedNode?.nextSibling ?? null);
-        }
-
-        lastPlacedNode = newTextNode;
       }
+      if (!lastPlacedNode) {
+        parent.prepend(newNode);
+      } else {
+        parent.insertBefore(newNode, lastPlacedNode?.nextSibling ?? null);
+      }
+      lastPlacedNode = newNode;
     } else {
       const { domNode, vnode } = change;
       if (isVRealElement(vnode)) {
@@ -122,6 +116,8 @@ function diffChildren(
         if (!newProps.dangerouslySetInnerHTML && newProps.children != null) {
           const children = flattenVNodes(newProps.children);
           diffChildren(domNode as Element, children);
+          // Store current props for future updates
+          (domNode as WebJSXManagedElement).__webjsx_props = newProps;
         }
       } else {
         domNode.textContent =
@@ -129,7 +125,9 @@ function diffChildren(
       }
 
       if (!lastPlacedNode) {
-        parent.prepend(domNode);
+        if (parent.firstChild !== domNode) {
+          parent.prepend(domNode);
+        }
       } else {
         if (lastPlacedNode.nextSibling !== domNode) {
           parent.insertBefore(domNode, lastPlacedNode?.nextSibling ?? null);
@@ -150,8 +148,8 @@ function diffChildren(
 }
 
 function canUpdateVNodes(
-  oldVNode: VRealNode | undefined,
-  newVNode: VRealNode
+  newVNode: VRealNode,
+  oldVNode: VRealNode | undefined
 ): boolean {
   if (!oldVNode) return false;
 
