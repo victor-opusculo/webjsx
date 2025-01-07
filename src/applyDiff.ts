@@ -28,7 +28,8 @@ function diffChildren(
     (parent as WebJSXManagedElement).__webjsx_props?.children ?? [];
   const changes: DOMChange[] = [];
   let keyedMap: Map<string | number, Node> | null = null;
-  let nodeAtPosition: Node | null = parent.firstChild;
+  const firstChild = parent.firstChild
+  let nodeAtPosition: Node | null = firstChild;
 
   for (let i = 0; i < newVNodes.length; i++) {
     const newVNode = newVNodes[i];
@@ -133,7 +134,7 @@ function diffChildren(
       }
 
       if (!lastPlacedNode) {
-        if (parent.firstChild !== domNode) {
+        if (firstChild !== domNode) {
           parent.prepend(domNode);
         }
       } else {
