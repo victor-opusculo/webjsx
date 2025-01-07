@@ -12,7 +12,7 @@ import { flattenVNodes } from "./utils.js";
 
 type DOMChange =
   | { type: "create"; vnode: VRealNode }
-  | { type: "update"; domNode: Node; vnode: VRealNode };
+  | { type: "update"; domNode: Node; newVNode: VRealNode; oldVNode: VRealNode };
 
 export function applyDiff(parent: Element | ShadowRoot, vnodes: VNode): void {
   const newVNodes = flattenVNodes(vnodes);
@@ -50,7 +50,12 @@ function diffChildren(
 
       const keyedNode = keyedMap.get(newKey);
       if (keyedNode) {
-        changes.push({ type: "update", domNode: keyedNode, vnode: newVNode });
+        changes.push({
+          type: "update",
+          domNode: keyedNode,
+          newVNode,
+          oldVNode,
+        });
         nodeAtPosition = nodeAtPosition?.nextSibling ?? null;
         continue;
       }
@@ -60,7 +65,8 @@ function diffChildren(
       changes.push({
         type: "update",
         domNode: nodeAtPosition,
-        vnode: newVNode,
+        newVNode,
+        oldVNode,
       });
     } else {
       changes.push({ type: "create", vnode: newVNode });
@@ -97,20 +103,20 @@ function diffChildren(
       }
       lastPlacedNode = newNode;
     } else {
-      const { domNode, vnode } = change;
-      if (isVRealElement(vnode)) {
+      const { domNode, newVNode, oldVNode } = change;
+      if (isVRealElement(newVNode)) {
         const oldProps = (domNode as WebJSXManagedElement).__webjsx_props || {};
-        const newProps = vnode.props;
+        const newProps = newVNode.props;
         updateAttributes(domNode as Element, newProps, oldProps);
 
-        if (vnode.props.key !== undefined) {
-          (domNode as any).__webjsx_key = vnode.props.key;
+        if (newVNode.props.key !== undefined) {
+          (domNode as any).__webjsx_key = newVNode.props.key;
         } else {
           delete (domNode as any).__webjsx_key;
         }
 
-        if (vnode.props.ref) {
-          assignRef(domNode, vnode.props.ref);
+        if (newVNode.props.ref) {
+          assignRef(domNode, newVNode.props.ref);
         }
 
         if (!newProps.dangerouslySetInnerHTML && newProps.children != null) {
@@ -120,8 +126,10 @@ function diffChildren(
           (domNode as WebJSXManagedElement).__webjsx_props = newProps;
         }
       } else {
-        domNode.textContent =
-          typeof vnode !== "string" ? vnode.toString() : vnode;
+        if (newVNode !== oldVNode) {
+          domNode.textContent =
+            typeof newVNode !== "string" ? newVNode.toString() : newVNode;
+        }
       }
 
       if (!lastPlacedNode) {
