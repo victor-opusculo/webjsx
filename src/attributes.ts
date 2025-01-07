@@ -81,7 +81,9 @@ function updateAttributesCore(
   oldProps: { [key: string]: any } = {}
 ): void {
   // Handle new/updated props
-  for (const [key, value] of Object.entries(newProps)) {
+  for (const key of Object.keys(newProps)) {
+    const value = newProps[key];
+
     if (
       key === "children" ||
       key === "key" ||
