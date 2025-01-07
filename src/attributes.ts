@@ -110,16 +110,6 @@ function updateAttributesCore(
     el.innerHTML = "";
   }
 
-  // If this is a fresh set (no oldProps), remove any attributes not in newProps
-  if (Object.keys(oldProps).length === 0) {
-    const currentAttrs = Array.from(el.attributes).map((attr) => attr.name);
-    for (const attr of currentAttrs) {
-      if (!(attr in newProps) && !attr.startsWith("on")) {
-        el.removeAttribute(attr);
-      }
-    }
-  }
-
   // Remove old props/attributes
   for (const key of Object.keys(oldProps)) {
     if (
