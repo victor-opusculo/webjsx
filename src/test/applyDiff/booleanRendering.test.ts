@@ -9,6 +9,7 @@ describe("applyDiff - Boolean Rendering", () => {
   beforeEach(() => {
     container = document.getElementById("app") as HTMLElement;
     container.innerHTML = ""; // Clear container before each test
+    (container as any).__webjsx_props = undefined;
   });
 
   it("should not render boolean values", () => {

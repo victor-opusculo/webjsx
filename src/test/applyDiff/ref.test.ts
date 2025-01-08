@@ -9,6 +9,7 @@ describe("applyDiff - Ref Support", () => {
   beforeEach(() => {
     container = document.getElementById("app") as HTMLElement;
     container.innerHTML = ""; // Clear container before each test
+    (container as any).__webjsx_props = undefined;
   });
 
   it("should assign function ref to a DOM node", () => {

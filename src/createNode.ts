@@ -53,12 +53,15 @@ export function createNode(
     if (vnode.props.children && !vnode.props.dangerouslySetInnerHTML) {
       const children = flattenVNodes(vnode.props.children);
 
+      const childDomNodes: Node[] = [];
       for (let i = 0; i < children.length; i++) {
         const child = children[i];
-        el.appendChild(createNode(child, namespaceURI));
+        const newDomNode = createNode(child, namespaceURI);
+        childDomNodes.push(newDomNode);
+        el.appendChild(newDomNode);
       }
 
-      setWebJSXProps(el, { children });
+      setWebJSXProps(el, children, childDomNodes);
     }
 
     return el;

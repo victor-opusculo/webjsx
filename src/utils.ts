@@ -106,6 +106,18 @@ export function getNamespaceURI(node: Node): string | undefined {
     : undefined;
 }
 
-export function setWebJSXProps(element: Element | ShadowRoot, props: ElementProps) {
+export function getWebJSXProps(element: Element | ShadowRoot): ElementProps {
+  return (element as WebJSXManagedElement).__webjsx_props ?? {};
+}
+
+export function setWebJSXProps(
+  element: Element | ShadowRoot,
+  children: VRealNode[],
+  addedDomNodes: Node[] | null
+) {
+  const props: ElementProps =
+    (element as WebJSXManagedElement).__webjsx_props || {};
+  props.children = children;
+  props.addedDomNodes = addedDomNodes;
   (element as WebJSXManagedElement).__webjsx_props = props;
 }

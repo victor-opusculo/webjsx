@@ -11,35 +11,39 @@ import {
   flattenVNodes,
   getChildNodes,
   getNamespaceURI,
+  getWebJSXProps,
   isNonBooleanPrimitive,
   isVRealElement,
   setWebJSXProps,
 } from "./utils.js";
 
+const CREATE_NODE_CHANGE = 1 as const;
+const UPDATE_NODE_CHANGE = 2 as const;
+
 type DOMChange =
-  | { type: "create"; vnode: VRealNode }
-  | { type: "update"; domNode: Node; newVNode: VRealNode; oldVNode: VRealNode };
+  | { type: typeof CREATE_NODE_CHANGE; vnode: VRealNode }
+  | {
+      type: typeof UPDATE_NODE_CHANGE;
+      domNode: Node;
+      newVNode: VRealNode;
+      oldVNode: VRealNode;
+    };
 
 export function applyDiff(parent: Element | ShadowRoot, vnodes: VNode): void {
   const newVNodes = flattenVNodes(vnodes);
-  diffChildren(parent, newVNodes);
-  const currentProps = (parent as WebJSXManagedElement).__webjsx_props;
-  if (currentProps) {
-    currentProps.children = newVNodes;
-  } else {
-    setWebJSXProps(parent, { children: newVNodes });
-  }
+  const newDomNodes = diffChildren(parent, newVNodes);
+  setWebJSXProps(parent, newVNodes, newDomNodes);
 }
 
 function diffChildren(
   parent: Element | ShadowRoot,
   newVNodes: VRealNode[]
-): void {
-  const oldVNodes =
-    (parent as WebJSXManagedElement).__webjsx_props?.children ?? [];
+): Node[] {
+  const webJSXProps = getWebJSXProps(parent);
+  const oldVNodes = webJSXProps?.children ?? [];
   const changes: DOMChange[] = [];
   let keyedMap: Map<NonBooleanPrimitive, Node> | null = null;
-  const originalChildNodes = getChildNodes(parent);
+  const originalChildNodes = webJSXProps.addedDomNodes ?? getChildNodes(parent);
   let hasKeyedNodes = false;
 
   for (let i = 0; i < newVNodes.length; i++) {
@@ -63,13 +67,13 @@ function diffChildren(
       const keyedNode = keyedMap.get(newKey);
       if (keyedNode) {
         changes.push({
-          type: "update",
+          type: UPDATE_NODE_CHANGE,
           domNode: keyedNode,
           newVNode,
           oldVNode,
         });
       } else {
-        changes.push({ type: "create", vnode: newVNode });
+        changes.push({ type: CREATE_NODE_CHANGE, vnode: newVNode });
       }
     } else {
       if (
@@ -78,18 +82,22 @@ function diffChildren(
         currentNode
       ) {
         changes.push({
-          type: "update",
+          type: UPDATE_NODE_CHANGE,
           domNode: currentNode,
           newVNode,
           oldVNode,
         });
       } else {
-        changes.push({ type: "create", vnode: newVNode });
+        changes.push({ type: CREATE_NODE_CHANGE, vnode: newVNode });
       }
     }
   }
 
-  const lastPlacedNode = applyChanges(parent, changes, originalChildNodes);
+  const { nodes, lastNode: lastPlacedNode } = applyChanges(
+    parent,
+    changes,
+    originalChildNodes
+  );
 
   // Remove any remaining nodes
   let nodeToRemove = lastPlacedNode ? lastPlacedNode.nextSibling : null;
@@ -99,6 +107,8 @@ function diffChildren(
     parent.removeChild(nodeToRemove);
     nodeToRemove = nextNode;
   }
+
+  return nodes;
 }
 
 function canUpdateVNodes(
@@ -129,11 +139,13 @@ function applyChanges(
   parent: Element | ShadowRoot,
   changes: DOMChange[],
   originalNodes: Node[]
-): Node | null {
+): { nodes: Node[]; lastNode: Node | null } {
+  const addedNodes: Node[] = [];
+
   let lastPlacedNode: Node | null = null;
 
   for (const change of changes) {
-    if (change.type === "create") {
+    if (change.type === CREATE_NODE_CHANGE) {
       let newNode: Node | undefined = undefined;
       if (isVRealElement(change.vnode)) {
         newNode = createNode(change.vnode, getNamespaceURI(parent));
@@ -149,6 +161,7 @@ function applyChanges(
       } else {
         parent.insertBefore(newNode, lastPlacedNode.nextSibling ?? null);
       }
+      addedNodes.push(newNode);
       lastPlacedNode = newNode;
     } else {
       const { domNode, newVNode, oldVNode } = change;
@@ -169,8 +182,8 @@ function applyChanges(
 
         if (!newProps.dangerouslySetInnerHTML && newProps.children != null) {
           const children = flattenVNodes(newProps.children);
-          diffChildren(domNode as Element, children);
-          setWebJSXProps(domNode as Element, newProps);
+          const newDomNodes = diffChildren(domNode as Element, children);
+          setWebJSXProps(domNode as Element, children, newDomNodes);
         }
       } else {
         if (newVNode !== oldVNode) {
@@ -188,8 +201,9 @@ function applyChanges(
           parent.insertBefore(domNode, lastPlacedNode.nextSibling ?? null);
         }
       }
+      addedNodes.push(domNode);
       lastPlacedNode = domNode;
     }
   }
-  return lastPlacedNode;
+  return { nodes: addedNodes, lastNode: lastPlacedNode };
 }
