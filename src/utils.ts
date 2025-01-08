@@ -1,5 +1,15 @@
 import { HTML_NAMESPACE } from "./constants.js";
-import { ChildTypes, Fragment, NonBooleanPrimitive, VElement, VNode, VRealElement, VRealNode } from "./types.js";
+import {
+  ChildTypes,
+  ElementProps,
+  Fragment,
+  NonBooleanPrimitive,
+  VElement,
+  VNode,
+  VRealElement,
+  VRealNode,
+  WebJSXManagedElement,
+} from "./types.js";
 
 /**
  * Checks if a virtual node is a Fragment.
@@ -80,7 +90,9 @@ export function isVRealElement(vnode: VRealNode): vnode is VRealElement {
   );
 }
 
-export function isNonBooleanPrimitive(vnode: VRealNode): vnode is NonBooleanPrimitive {
+export function isNonBooleanPrimitive(
+  vnode: VRealNode
+): vnode is NonBooleanPrimitive {
   return (
     typeof vnode === "string" ||
     typeof vnode === "number" ||
@@ -92,4 +104,8 @@ export function getNamespaceURI(node: Node): string | undefined {
   return node instanceof Element && node.namespaceURI !== HTML_NAMESPACE
     ? node.namespaceURI ?? undefined
     : undefined;
+}
+
+export function setWebJSXProps(element: Element | ShadowRoot, props: ElementProps) {
+  (element as WebJSXManagedElement).__webjsx_props = props;
 }

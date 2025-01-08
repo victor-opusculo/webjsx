@@ -13,6 +13,7 @@ import {
   getNamespaceURI,
   isNonBooleanPrimitive,
   isVRealElement,
+  setWebJSXProps,
 } from "./utils.js";
 
 type DOMChange =
@@ -26,7 +27,7 @@ export function applyDiff(parent: Element | ShadowRoot, vnodes: VNode): void {
   if (currentProps) {
     currentProps.children = newVNodes;
   } else {
-    (parent as WebJSXManagedElement).__webjsx_props = { children: newVNodes };
+    setWebJSXProps(parent, { children: newVNodes });
   }
 }
 
@@ -169,7 +170,7 @@ function applyChanges(
         if (!newProps.dangerouslySetInnerHTML && newProps.children != null) {
           const children = flattenVNodes(newProps.children);
           diffChildren(domNode as Element, children);
-          (domNode as WebJSXManagedElement).__webjsx_props = newProps;
+          setWebJSXProps(domNode as Element, newProps);
         }
       } else {
         if (newVNode !== oldVNode) {
