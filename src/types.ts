@@ -27,7 +27,7 @@ export interface ElementProps {
   xmlns?: string;
   class?: string;
   children?: VRealNode[] | null;
-  key?: string | number;
+  key?: NonBooleanPrimitive;
   dangerouslySetInnerHTML?: { __html: string };
   ref?: Ref<Node>;
 }
@@ -62,5 +62,9 @@ export type WebJSXAwareComponent = {
 } & Element;
 
 export type WebJSXManagedElement = {
+  __webjsx_key: NonBooleanPrimitive;
   __webjsx_props: ElementProps;
+  __webjsx_listeners: {
+    [name: string]: EventListenerOrEventListenerObject;
+  };
 } & Element;

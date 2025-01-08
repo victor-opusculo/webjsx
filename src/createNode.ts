@@ -1,7 +1,7 @@
 import { setAttributes } from "./attributes.js";
 import { SVG_NAMESPACE } from "./constants.js";
 import { VRealNode, WebJSXManagedElement } from "./types.js";
-import { flattenVNodes } from "./utils.js";
+import { assignRef, flattenVNodes } from "./utils.js";
 
 /**
  * Creates a real DOM node from a virtual node representation.
@@ -43,7 +43,7 @@ export function createNode(
     }
 
     if (vnode.props.key !== undefined) {
-      (el as any).__webjsx_key = vnode.props.key;
+      (el as WebJSXManagedElement).__webjsx_key = vnode.props.key;
     }
 
     if (vnode.props.ref) {
@@ -62,26 +62,5 @@ export function createNode(
     }
 
     return el;
-  }
-}
-
-/**
- * Assigns a ref to a DOM node.
- * @param node Target DOM node
- * @param ref Reference to assign (function or object with current property)
- */
-function assignRef(node: Node, ref: any): void {
-  const currentRef = (node as any).__webjsx_assignedRef;
-
-  // Only assign if the ref is different
-  if (currentRef !== ref) {
-    if (typeof ref === "function") {
-      ref(node);
-    } else if (ref && typeof ref === "object") {
-      ref.current = node;
-    }
-
-    // Store the assigned ref
-    (node as any).__webjsx_assignedRef = ref;
   }
 }

@@ -1,4 +1,11 @@
-import { ChildTypes, Fragment, VElement, VNode, VRealNode } from "./types.js";
+import {
+  ChildTypes,
+  Fragment,
+  NonBooleanPrimitive,
+  VElement,
+  VNode,
+  VRealNode,
+} from "./types.js";
 import { flattenVNodes } from "./utils.js";
 
 /**
@@ -34,12 +41,11 @@ export function createElement(
   };
 }
 
-
 // As called from jsx-runtime.jsx function.
 export function createElementJSX(
   type: string | typeof Fragment,
   props: { [key: string]: any } | null,
-  key?: string | number
+  key?: NonBooleanPrimitive
 ): VElement {
   props = props || {};
 

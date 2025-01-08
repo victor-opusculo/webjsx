@@ -1,4 +1,9 @@
-import { ElementProps, FragmentType, VElement, VNode } from "./types.js";
+import {
+  ElementProps,
+  FragmentType,
+  NonBooleanPrimitive,
+  VElement
+} from "./types.js";
 
 declare global {
   namespace JSX {
@@ -6,7 +11,7 @@ declare global {
      * Common attributes available to all elements
      */
     interface IntrinsicAttributes {
-      key?: string | number;
+      key?: NonBooleanPrimitive;
     }
 
     /**

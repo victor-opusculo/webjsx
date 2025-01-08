@@ -14,18 +14,17 @@ import { ElementProps, WebJSXManagedElement } from "./types.js";
 function updateEventListener(
   el: Element,
   eventName: string,
-  newHandler?: Function,
-  oldHandler?: Function
+  newHandler?: EventListenerOrEventListenerObject,
+  oldHandler?: EventListenerOrEventListenerObject
 ): void {
   if (oldHandler && oldHandler !== newHandler) {
-    el.removeEventListener(eventName, oldHandler as any);
+    el.removeEventListener(eventName, oldHandler);
   }
   if (newHandler && oldHandler !== newHandler) {
-    el.addEventListener(eventName, newHandler as any);
-    (el as any).__webjsx_listeners = {
-      ...((el as any).__webjsx_listeners || {}),
-      [eventName]: newHandler,
-    };
+    el.addEventListener(eventName, newHandler);
+    (el as WebJSXManagedElement).__webjsx_listeners =
+      (el as WebJSXManagedElement).__webjsx_listeners ?? {};
+    (el as WebJSXManagedElement).__webjsx_listeners[eventName] = newHandler;
   }
 }
 
@@ -98,7 +97,7 @@ function updateAttributesCore(
         el,
         eventName,
         value,
-        (el as any).__webjsx_listeners?.[eventName]
+        (el as WebJSXManagedElement).__webjsx_listeners?.[eventName]
       );
     } else if (value !== oldProps[key]) {
       updatePropOrAttr(el, key, value);
@@ -106,10 +105,16 @@ function updateAttributesCore(
   }
 
   // Handle dangerouslySetInnerHTML
-  if ("dangerouslySetInnerHTML" in newProps) {
-    const html = newProps.dangerouslySetInnerHTML!.__html || "";
-    el.innerHTML = html;
-  } else if ("dangerouslySetInnerHTML" in oldProps) {
+  if (newProps.dangerouslySetInnerHTML) {
+    if (
+      !oldProps.dangerouslySetInnerHTML ||
+      newProps.dangerouslySetInnerHTML.__html !==
+        oldProps.dangerouslySetInnerHTML.__html
+    ) {
+      const html = newProps.dangerouslySetInnerHTML?.__html || "";
+      el.innerHTML = html;
+    }
+  } else if (oldProps.dangerouslySetInnerHTML) {
     el.innerHTML = "";
   }
 
@@ -123,10 +128,11 @@ function updateAttributesCore(
     ) {
       if (key.startsWith("on")) {
         const eventName = key.substring(2).toLowerCase();
-        const existingListener = (el as any).__webjsx_listeners?.[eventName];
+        const existingListener = (el as WebJSXManagedElement)
+          .__webjsx_listeners?.[eventName];
         if (existingListener) {
           el.removeEventListener(eventName, existingListener);
-          delete (el as any).__webjsx_listeners[eventName];
+          delete (el as WebJSXManagedElement).__webjsx_listeners[eventName];
         }
       } else if (key in el) {
         (el as any)[key] = undefined;

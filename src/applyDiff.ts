@@ -1,14 +1,19 @@
 import { updateAttributes } from "./attributes.js";
-import { HTML_NAMESPACE } from "./constants.js";
 import { createNode } from "./createNode.js";
 import {
   NonBooleanPrimitive,
   VNode,
-  VRealElement,
   VRealNode,
   WebJSXManagedElement,
 } from "./types.js";
-import { flattenVNodes } from "./utils.js";
+import {
+  assignRef,
+  flattenVNodes,
+  getChildNodes,
+  getNamespaceURI,
+  isNonBooleanPrimitive,
+  isVRealElement,
+} from "./utils.js";
 
 type DOMChange =
   | { type: "create"; vnode: VRealNode }
@@ -17,7 +22,12 @@ type DOMChange =
 export function applyDiff(parent: Element | ShadowRoot, vnodes: VNode): void {
   const newVNodes = flattenVNodes(vnodes);
   diffChildren(parent, newVNodes);
-  (parent as WebJSXManagedElement).__webjsx_props = { children: newVNodes };
+  const currentProps = (parent as WebJSXManagedElement).__webjsx_props;
+  if (currentProps) {
+    currentProps.children = newVNodes;
+  } else {
+    (parent as WebJSXManagedElement).__webjsx_props = { children: newVNodes };
+  }
 }
 
 function diffChildren(
@@ -27,25 +37,25 @@ function diffChildren(
   const oldVNodes =
     (parent as WebJSXManagedElement).__webjsx_props?.children ?? [];
   const changes: DOMChange[] = [];
-  let keyedMap: Map<string | number, Node> | null = null;
-  const firstChild = parent.firstChild
-  let nodeAtPosition: Node | null = firstChild;
+  let keyedMap: Map<NonBooleanPrimitive, Node> | null = null;
+  const childNodes = getChildNodes(parent);
+  let hasKeyedNodes = false;
 
   for (let i = 0; i < newVNodes.length; i++) {
     const newVNode = newVNodes[i];
     const oldVNode = oldVNodes[i];
+    const currentNode = childNodes[i];
     const newKey = isVRealElement(newVNode) ? newVNode.props.key : undefined;
 
     if (newKey !== undefined) {
       if (!keyedMap) {
+        hasKeyedNodes = true;
         keyedMap = new Map();
-        let node: Node | null = nodeAtPosition;
-        while (node) {
-          const key = (node as any).__webjsx_key;
+        for (const node of childNodes) {
+          const key = (node as WebJSXManagedElement).__webjsx_key;
           if (key !== undefined) {
             keyedMap.set(key, node);
           }
-          node = node.nextSibling;
         }
       }
 
@@ -57,94 +67,28 @@ function diffChildren(
           newVNode,
           oldVNode,
         });
-        nodeAtPosition = nodeAtPosition?.nextSibling ?? null;
-        continue;
+      } else {
+        changes.push({ type: "create", vnode: newVNode });
+      }
+    } else {
+      if (
+        !hasKeyedNodes &&
+        canUpdateVNodes(newVNode, oldVNode) &&
+        currentNode
+      ) {
+        changes.push({
+          type: "update",
+          domNode: currentNode,
+          newVNode,
+          oldVNode,
+        });
+      } else {
+        changes.push({ type: "create", vnode: newVNode });
       }
     }
-
-    if (canUpdateVNodes(newVNode, oldVNode) && nodeAtPosition) {
-      changes.push({
-        type: "update",
-        domNode: nodeAtPosition,
-        newVNode,
-        oldVNode,
-      });
-    } else {
-      changes.push({ type: "create", vnode: newVNode });
-    }
-
-    nodeAtPosition = nodeAtPosition?.nextSibling ?? null;
   }
 
-  // Apply the changes
-  let lastPlacedNode: Node | null = null;
-
-  for (const change of changes) {
-    if (change.type === "create") {
-      let newNode: Node | undefined = undefined;
-      if (isVRealElement(change.vnode)) {
-        newNode = createNode(change.vnode, getNamespaceURI(parent));
-        if (change.vnode.props.key !== undefined) {
-          (newNode as any).__webjsx_key = change.vnode.props.key;
-        }
-        if (change.vnode.props.ref) {
-          assignRef(newNode, change.vnode.props.ref);
-        }
-      } else {
-        newNode = document.createTextNode(
-          typeof change.vnode === "number" || typeof change.vnode === "bigint"
-            ? change.vnode.toString()
-            : change.vnode
-        );
-      }
-      if (!lastPlacedNode) {
-        parent.prepend(newNode);
-      } else {
-        parent.insertBefore(newNode, lastPlacedNode?.nextSibling ?? null);
-      }
-      lastPlacedNode = newNode;
-    } else {
-      const { domNode, newVNode, oldVNode } = change;
-      if (isVRealElement(newVNode)) {
-        const oldProps = (domNode as WebJSXManagedElement).__webjsx_props || {};
-        const newProps = newVNode.props;
-        updateAttributes(domNode as Element, newProps, oldProps);
-
-        if (newVNode.props.key !== undefined) {
-          (domNode as any).__webjsx_key = newVNode.props.key;
-        } else {
-          delete (domNode as any).__webjsx_key;
-        }
-
-        if (newVNode.props.ref) {
-          assignRef(domNode, newVNode.props.ref);
-        }
-
-        if (!newProps.dangerouslySetInnerHTML && newProps.children != null) {
-          const children = flattenVNodes(newProps.children);
-          diffChildren(domNode as Element, children);
-          // Store current props for future updates
-          (domNode as WebJSXManagedElement).__webjsx_props = newProps;
-        }
-      } else {
-        if (newVNode !== oldVNode) {
-          domNode.textContent =
-            typeof newVNode !== "string" ? newVNode.toString() : newVNode;
-        }
-      }
-
-      if (!lastPlacedNode) {
-        if (firstChild !== domNode) {
-          parent.prepend(domNode);
-        }
-      } else {
-        if (lastPlacedNode.nextSibling !== domNode) {
-          parent.insertBefore(domNode, lastPlacedNode?.nextSibling ?? null);
-        }
-      }
-      lastPlacedNode = domNode;
-    }
-  }
+  const lastPlacedNode = applyChanges(parent, changes);
 
   // Remove any remaining nodes
   let nodeToRemove = lastPlacedNode ? lastPlacedNode.nextSibling : null;
@@ -180,37 +124,70 @@ function canUpdateVNodes(
   }
 }
 
-function assignRef(node: Node, ref: any): void {
-  const currentRef = (node as any).__webjsx_assignedRef;
+function applyChanges(
+  parent: Element | ShadowRoot,
+  changes: DOMChange[]
+): Node | null {
+  let lastPlacedNode: Node | null = null;
 
-  if (currentRef !== ref) {
-    if (typeof ref === "function") {
-      ref(node);
-    } else if (ref && typeof ref === "object") {
-      ref.current = node;
+  for (const change of changes) {
+    if (change.type === "create") {
+      let newNode: Node | undefined = undefined;
+      if (isVRealElement(change.vnode)) {
+        newNode = createNode(change.vnode, getNamespaceURI(parent));
+      } else {
+        newNode = document.createTextNode(
+          typeof change.vnode === "number" || typeof change.vnode === "bigint"
+            ? change.vnode.toString()
+            : change.vnode
+        );
+      }
+      if (!lastPlacedNode) {
+        parent.prepend(newNode);
+      } else {
+        parent.insertBefore(newNode, lastPlacedNode.nextSibling ?? null);
+      }
+      lastPlacedNode = newNode;
+    } else {
+      const { domNode, newVNode, oldVNode } = change;
+      if (isVRealElement(newVNode)) {
+        const oldProps = (domNode as WebJSXManagedElement).__webjsx_props || {};
+        const newProps = newVNode.props;
+        updateAttributes(domNode as Element, newProps, oldProps);
+
+        if (newVNode.props.key !== undefined) {
+          (domNode as WebJSXManagedElement).__webjsx_key = newVNode.props.key;
+        } else {
+          delete (domNode as any).__webjsx_key;
+        }
+
+        if (newVNode.props.ref) {
+          assignRef(domNode, newVNode.props.ref);
+        }
+
+        if (!newProps.dangerouslySetInnerHTML && newProps.children != null) {
+          const children = flattenVNodes(newProps.children);
+          diffChildren(domNode as Element, children);
+          (domNode as WebJSXManagedElement).__webjsx_props = newProps;
+        }
+      } else {
+        if (newVNode !== oldVNode) {
+          domNode.textContent =
+            typeof newVNode !== "string" ? newVNode.toString() : newVNode;
+        }
+      }
+
+      if (!lastPlacedNode) {
+        if (parent.firstChild !== domNode) {
+          parent.prepend(domNode);
+        }
+      } else {
+        if (lastPlacedNode.nextSibling !== domNode) {
+          parent.insertBefore(domNode, lastPlacedNode.nextSibling ?? null);
+        }
+      }
+      lastPlacedNode = domNode;
     }
-    (node as any).__webjsx_assignedRef = ref;
   }
-}
-
-function isVRealElement(vnode: VRealNode): vnode is VRealElement {
-  return (
-    typeof vnode !== "string" &&
-    typeof vnode !== "number" &&
-    typeof vnode !== "bigint"
-  );
-}
-
-function isNonBooleanPrimitive(vnode: VRealNode): vnode is NonBooleanPrimitive {
-  return (
-    typeof vnode === "string" ||
-    typeof vnode === "number" ||
-    typeof vnode === "bigint"
-  );
-}
-
-function getNamespaceURI(node: Node): string | undefined {
-  return node instanceof Element && node.namespaceURI !== HTML_NAMESPACE
-    ? node.namespaceURI ?? undefined
-    : undefined;
+  return lastPlacedNode;
 }
