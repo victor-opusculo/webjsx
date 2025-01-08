@@ -9,7 +9,6 @@ describe("applyDiff - Props Handling", () => {
   beforeEach(() => {
     container = document.getElementById("app") as HTMLElement;
     container.innerHTML = ""; // Clear container before each test
-    (container as any).__webjsx_props = undefined;
   });
 
   it("should update existing elements with new props", () => {

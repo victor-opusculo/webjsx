@@ -9,7 +9,6 @@ describe("applyDiff - dangerouslySetInnerHTML", () => {
   beforeEach(() => {
     container = document.getElementById("app") as HTMLElement;
     container.innerHTML = ""; // Clear container before each test
-    (container as any).__webjsx_props = undefined;
   });
 
   it("should render HTML content using dangerouslySetInnerHTML", () => {

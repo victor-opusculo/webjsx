@@ -87,8 +87,7 @@ function updateAttributesCore(
     if (
       key === "children" ||
       key === "key" ||
-      key === "dangerouslySetInnerHTML" ||
-      key === "addedDomNodes"
+      key === "dangerouslySetInnerHTML"
     )
       continue;
 
@@ -125,8 +124,7 @@ function updateAttributesCore(
       !(key in newProps) &&
       key !== "children" &&
       key !== "key" &&
-      key !== "dangerouslySetInnerHTML" &&
-      key !== "addedDomNodes"
+      key !== "dangerouslySetInnerHTML"
     ) {
       if (key.startsWith("on")) {
         const eventName = key.substring(2).toLowerCase();

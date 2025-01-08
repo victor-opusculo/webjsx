@@ -27,7 +27,6 @@ export interface ElementProps {
   xmlns?: string;
   class?: string;
   children?: VRealNode[] | null;
-  addedDomNodes?: Node[] | null;
   key?: NonBooleanPrimitive;
   dangerouslySetInnerHTML?: { __html: string };
   ref?: Ref<Node>;

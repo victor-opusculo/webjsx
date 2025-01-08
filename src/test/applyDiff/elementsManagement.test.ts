@@ -9,7 +9,6 @@ describe("applyDiff - Elements Management", () => {
   beforeEach(() => {
     container = document.getElementById("app") as HTMLElement;
     container.innerHTML = ""; // Clear container before each test
-    (container as any).__webjsx_props = undefined;
   });
 
   it("should add and remove elements correctly", () => {
