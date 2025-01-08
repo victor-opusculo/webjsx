@@ -38,20 +38,20 @@ function diffChildren(
     (parent as WebJSXManagedElement).__webjsx_props?.children ?? [];
   const changes: DOMChange[] = [];
   let keyedMap: Map<NonBooleanPrimitive, Node> | null = null;
-  const childNodes = getChildNodes(parent);
+  const originalChildNodes = getChildNodes(parent);
   let hasKeyedNodes = false;
 
   for (let i = 0; i < newVNodes.length; i++) {
     const newVNode = newVNodes[i];
     const oldVNode = oldVNodes[i];
-    const currentNode = childNodes[i];
+    const currentNode = originalChildNodes[i];
     const newKey = isVRealElement(newVNode) ? newVNode.props.key : undefined;
 
     if (newKey !== undefined) {
       if (!keyedMap) {
         hasKeyedNodes = true;
         keyedMap = new Map();
-        for (const node of childNodes) {
+        for (const node of originalChildNodes) {
           const key = (node as WebJSXManagedElement).__webjsx_key;
           if (key !== undefined) {
             keyedMap.set(key, node);
@@ -88,7 +88,7 @@ function diffChildren(
     }
   }
 
-  const lastPlacedNode = applyChanges(parent, changes);
+  const lastPlacedNode = applyChanges(parent, changes, originalChildNodes);
 
   // Remove any remaining nodes
   let nodeToRemove = lastPlacedNode ? lastPlacedNode.nextSibling : null;
@@ -126,7 +126,8 @@ function canUpdateVNodes(
 
 function applyChanges(
   parent: Element | ShadowRoot,
-  changes: DOMChange[]
+  changes: DOMChange[],
+  originalNodes: Node[]
 ): Node | null {
   let lastPlacedNode: Node | null = null;
 
@@ -178,7 +179,7 @@ function applyChanges(
       }
 
       if (!lastPlacedNode) {
-        if (parent.firstChild !== domNode) {
+        if (domNode !== originalNodes[0]) {
           parent.prepend(domNode);
         }
       } else {
