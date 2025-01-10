@@ -1,7 +1,7 @@
 import { setAttributes } from "./attributes.js";
 import { SVG_NAMESPACE } from "./constants.js";
 import { VRealNode, WebJSXManagedElement } from "./types.js";
-import { assignRef, flattenVNodes, setWebJSXProps } from "./utils.js";
+import { assignRef, setWebJSXChildNodeCache, setWebJSXProps } from "./utils.js";
 
 /**
  * Creates a real DOM node from a virtual node representation.
@@ -51,7 +51,7 @@ export function createNode(
     }
 
     if (vnode.props.children && !vnode.props.dangerouslySetInnerHTML) {
-      const children = flattenVNodes(vnode.props.children);
+      const children = vnode.props.children;
 
       const nodes: Node[] = [];
       for (let i = 0; i < children.length; i++) {
@@ -62,8 +62,7 @@ export function createNode(
       }
 
       setWebJSXProps(el, { children });
-
-      (el as WebJSXManagedElement).__webjsx_childNodes = nodes;
+      setWebJSXChildNodeCache(el, nodes);
     }
 
     return el;

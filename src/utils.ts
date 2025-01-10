@@ -124,3 +124,16 @@ export function getWebJSXProps(element: Element | ShadowRoot) {
   }
   return props;
 }
+
+export function setWebJSXChildNodeCache(
+  element: Element | ShadowRoot,
+  childNodes: Node[]
+) {
+  (element as WebJSXManagedElement).__webjsx_childNodes = childNodes;
+}
+
+export function getWebJSXChildNodeCache(
+  element: Element | ShadowRoot
+): Node[] | undefined {
+  return (element as WebJSXManagedElement).__webjsx_childNodes;
+}
