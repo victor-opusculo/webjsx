@@ -4,8 +4,7 @@ import {
   Fragment,
   NonBooleanPrimitive,
   VElement,
-  VNode,
-  VRealNode,
+  VRealNode
 } from "./types.js";
 import { flattenVNodes } from "./utils.js";
 
@@ -37,8 +36,7 @@ export function createElement(
     type,
     tagName:
       typeof type === "string"
-        ? KNOWN_ELEMENTS[type as keyof typeof KNOWN_ELEMENTS] ||
-          type.toUpperCase()
+        ? KNOWN_ELEMENTS.get(type) || type.toUpperCase()
         : undefined,
     props: normalizedProps,
   };
@@ -70,8 +68,7 @@ export function createElementJSX(
     type,
     tagName:
       typeof type === "string"
-        ? KNOWN_ELEMENTS[type as keyof typeof KNOWN_ELEMENTS] ||
-          type.toUpperCase()
+        ? KNOWN_ELEMENTS.get(type) || type.toUpperCase()
         : undefined,
     props,
   };
