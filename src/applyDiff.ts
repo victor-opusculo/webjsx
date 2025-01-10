@@ -56,7 +56,7 @@ function diffChildren(
       if (!keyedMap) {
         hasKeyedNodes = true;
         keyedMap = new Map();
-        
+
         for (const node of originalChildNodes) {
           const key = (node as WebJSXManagedElement).__webjsx_key;
           if (key !== undefined) {
@@ -101,12 +101,8 @@ function diffChildren(
   );
 
   // Remove any remaining nodes
-  let nodeToRemove = lastPlacedNode ? lastPlacedNode.nextSibling : null;
-
-  while (nodeToRemove) {
-    const nextNode = nodeToRemove.nextSibling;
-    parent.removeChild(nodeToRemove);
-    nodeToRemove = nextNode;
+  while (lastPlacedNode?.nextSibling) {
+    parent.removeChild(lastPlacedNode.nextSibling);
   }
 
   return nodes;
@@ -167,7 +163,7 @@ function applyChanges(
     } else {
       const { node, newVNode, oldVNode } = change;
       if (isVRealElement(newVNode)) {
-        const oldProps = (node as WebJSXManagedElement).__webjsx_props || {};
+        const oldProps = (oldVNode as VRealElement)?.props || {};
         const newProps = newVNode.props;
         updateAttributes(node as Element, newProps, oldProps);
 

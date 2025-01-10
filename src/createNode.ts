@@ -61,7 +61,7 @@ export function createNode(
         el.appendChild(node);
       }
 
-      setWebJSXProps(el, { children });
+      setWebJSXProps(el, vnode.props);
       setWebJSXChildNodeCache(el, nodes);
     }
 

@@ -1,3 +1,4 @@
+import { KNOWN_ELEMENTS } from "./elementTags.js";
 import {
   ChildTypes,
   Fragment,
@@ -22,7 +23,6 @@ export function createElement(
 ): VElement {
   const normalizedProps: { [key: string]: any } = props ? { ...props } : {};
   const flatChildren: VRealNode[] = flattenVNodes(children);
-
   if (flatChildren.length > 0) {
     // Set children property only if dangerouslySetInnerHTML is not present
     if (!normalizedProps.dangerouslySetInnerHTML) {
@@ -33,10 +33,13 @@ export function createElement(
       );
     }
   }
-
   return {
     type,
-    tagName: typeof type === "string" ? type.toUpperCase() : undefined,
+    tagName:
+      typeof type === "string"
+        ? KNOWN_ELEMENTS[type as keyof typeof KNOWN_ELEMENTS] ||
+          type.toUpperCase()
+        : undefined,
     props: normalizedProps,
   };
 }
@@ -48,13 +51,10 @@ export function createElementJSX(
   key?: NonBooleanPrimitive
 ): VElement {
   props = props || {};
-
   const flatChildren: VRealNode[] = props ? flattenVNodes(props.children) : [];
-
   if (key !== undefined) {
     props.key = key;
   }
-
   if (flatChildren.length > 0) {
     // Set children property only if dangerouslySetInnerHTML is not present
     if (!props.dangerouslySetInnerHTML) {
@@ -66,10 +66,13 @@ export function createElementJSX(
       );
     }
   }
-
   return {
     type,
-    tagName: typeof type === "string" ? type.toUpperCase() : undefined,
+    tagName:
+      typeof type === "string"
+        ? KNOWN_ELEMENTS[type as keyof typeof KNOWN_ELEMENTS] ||
+          type.toUpperCase()
+        : undefined,
     props,
   };
 }
