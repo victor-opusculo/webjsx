@@ -83,20 +83,23 @@ export function assignRef(node: Node, ref: any): void {
 }
 
 export function isVRealElement(vnode: VRealNode): vnode is VRealElement {
+  const typeofVNode = typeof vnode;
   return (
-    typeof vnode !== "string" &&
-    typeof vnode !== "number" &&
-    typeof vnode !== "bigint"
+    typeofVNode !== "string" &&
+    typeofVNode !== "number" &&
+    typeofVNode !== "bigint"
   );
 }
 
 export function isNonBooleanPrimitive(
   vnode: VRealNode
 ): vnode is NonBooleanPrimitive {
+  const typeofVNode = typeof vnode;
+
   return (
-    typeof vnode === "string" ||
-    typeof vnode === "number" ||
-    typeof vnode === "bigint"
+    typeofVNode === "string" ||
+    typeofVNode === "number" ||
+    typeofVNode === "bigint"
   );
 }
 

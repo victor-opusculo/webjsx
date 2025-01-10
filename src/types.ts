@@ -30,7 +30,6 @@ export interface ElementProps {
   key?: NonBooleanPrimitive;
   dangerouslySetInnerHTML?: { __html: string };
   ref?: Ref<Node>;
-  nodes?: Node[]
 }
 
 /**
@@ -68,4 +67,5 @@ export type WebJSXManagedElement = {
   __webjsx_listeners: {
     [name: string]: EventListenerOrEventListenerObject;
   };
+  __webjsx_childNodes?: Node[];
 } & Element;

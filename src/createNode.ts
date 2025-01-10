@@ -61,7 +61,9 @@ export function createNode(
         el.appendChild(node);
       }
 
-      setWebJSXProps(el, { children, nodes });
+      setWebJSXProps(el, { children });
+
+      (el as WebJSXManagedElement).__webjsx_childNodes = nodes;
     }
 
     return el;
