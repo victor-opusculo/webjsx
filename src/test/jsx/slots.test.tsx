@@ -3,6 +3,7 @@ import { JSDOM } from "jsdom";
 import { applyDiff } from "../../applyDiff.js";
 import * as webjsx from "../../index.js";
 import "../setup.js";
+import { resetContainer } from "../setup.js";
 
 describe("JSX Syntax - Web Components with Slots", () => {
   let dom: JSDOM;
@@ -10,11 +11,7 @@ describe("JSX Syntax - Web Components with Slots", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    dom = new JSDOM(`<!DOCTYPE html><body><div id="app"></div></body>`, {
-      runScripts: "dangerously",
-    });
-    document = dom.window.document;
-    container = document.getElementById("app") as HTMLElement;
+    container = resetContainer();
   });
 
   // String-based slot content (shadow DOM usage)

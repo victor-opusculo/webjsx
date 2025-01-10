@@ -30,6 +30,7 @@ export interface ElementProps {
   key?: NonBooleanPrimitive;
   dangerouslySetInnerHTML?: { __html: string };
   ref?: Ref<Node>;
+  nodes?: Node[]
 }
 
 /**

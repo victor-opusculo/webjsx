@@ -2,13 +2,13 @@ import { expect } from "chai";
 import { applyDiff } from "../../applyDiff.js";
 import { createElement, Fragment } from "../../index.js";
 import "../setup.js";
+import { resetContainer } from "../setup.js";
 
 describe("applyDiff - Ref Support", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    container = document.getElementById("app") as HTMLElement;
-    container.innerHTML = ""; // Clear container before each test
+    container = resetContainer();
   });
 
   it("should assign function ref to a DOM node", () => {

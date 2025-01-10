@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { JSDOM } from "jsdom";
 import { applyDiff } from "../../applyDiff.js";
 import "../setup.js";
+import { resetContainer } from "../setup.js";
 
 describe("JSX Syntax - Ref Support", () => {
   let dom: JSDOM;
@@ -10,11 +11,7 @@ describe("JSX Syntax - Ref Support", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    dom = new JSDOM(`<!DOCTYPE html><body><div id="app"></div></body>`, {
-      runScripts: "dangerously",
-    });
-    document = dom.window.document;
-    container = document.getElementById("app") as HTMLElement;
+    container = resetContainer();
   });
 
   it("should assign function ref to a JSX element", () => {

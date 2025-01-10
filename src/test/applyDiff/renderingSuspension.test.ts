@@ -2,13 +2,13 @@ import "../setup.js";
 import { expect } from "chai";
 import { applyDiff } from "../../applyDiff.js";
 import { createElement } from "../../index.js";
+import { resetContainer } from "../setup.js";
 
 describe("applyDiff - Rendering Suspension with Custom Element", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    container = document.getElementById("app") as HTMLElement;
-    container.innerHTML = ""; // Clear container before each test
+    container = resetContainer();
   });
 
   // Define a custom web component that supports rendering suspension

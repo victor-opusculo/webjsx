@@ -3,6 +3,7 @@ import { JSDOM } from "jsdom";
 import { applyDiff } from "../../applyDiff.js";
 import * as webjsx from "../../index.js";
 import "../setup.js";
+import { getDOM, resetContainer } from "../setup.js";
 
 describe("JSX Syntax - Event Handlers", () => {
   let dom: JSDOM;
@@ -10,11 +11,7 @@ describe("JSX Syntax - Event Handlers", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    dom = new JSDOM(`<!DOCTYPE html><body><div id="app"></div></body>`, {
-      runScripts: "dangerously",
-    });
-    document = dom.window.document;
-    container = document.getElementById("app") as HTMLElement;
+    container = resetContainer();
   });
 
   it("should handle event handlers in JSX", () => {
@@ -32,6 +29,7 @@ describe("JSX Syntax - Event Handlers", () => {
     expect(button?.textContent).to.equal("Click Me");
 
     // Simulate click event
+    const dom = getDOM();
     button?.dispatchEvent(new dom.window.Event("click"));
     expect(clicked).to.be.true;
   });

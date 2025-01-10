@@ -2,13 +2,13 @@ import "../setup.js";
 import { expect } from "chai";
 import { applyDiff } from "../../applyDiff.js";
 import { createElement } from "../../index.js";
+import { resetContainer } from "../setup.js";
 
 describe("applyDiff - Elements Management", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    container = document.getElementById("app") as HTMLElement;
-    container.innerHTML = ""; // Clear container before each test
+    container = resetContainer();
   });
 
   it("should add and remove elements correctly", () => {
