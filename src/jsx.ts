@@ -26,7 +26,7 @@ declare global {
      * Helper type for extracting element attributes
      */
     type ElementAttributesFor<T extends Node> = Partial<{
-      [K in Exclude<keyof T, "children">]: T[K] extends Function
+      [K in Exclude<keyof T, "children" | "nodes">]: T[K] extends Function
         ? T[K]
         : T[K] | string;
     }> &
