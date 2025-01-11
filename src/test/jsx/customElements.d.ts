@@ -35,6 +35,10 @@ declare global {
       "multi-slot-element": {
         children?: any;
       };
+      "tracking-element": {
+        tracked?: string;
+        children?: any;
+      };
     }
   }
 }
