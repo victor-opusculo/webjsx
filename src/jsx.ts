@@ -1,6 +1,5 @@
 import {
   ElementProps,
-  FragmentType,
   NonBooleanPrimitive,
   VElement
 } from "./types.js";
@@ -18,7 +17,7 @@ declare global {
      * Base interface for JSX elements
      */
     interface Element extends VElement {
-      type: string | FragmentType;
+      type: string;
       props: ElementProps;
     }
 

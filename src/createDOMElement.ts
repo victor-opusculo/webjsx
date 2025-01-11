@@ -1,12 +1,12 @@
 import { setAttributes } from "./attributes.js";
 import { SVG_NAMESPACE } from "./constants.js";
 import {
-  VRealElement,
+  VElement,
   WebJSXManagedElement
 } from "./types.js";
 import {
   assignRef,
-  isVRealElement,
+  isVElement,
   setWebJSXChildNodeCache,
   setWebJSXProps,
 } from "./utils.js";
@@ -18,7 +18,7 @@ import {
  * @returns Created DOM node
  */
 export function createDOMElement(
-  velement: VRealElement,
+  velement: VElement,
   parentNamespaceURI?: string
 ): Node {
   const namespaceURI =
@@ -60,7 +60,7 @@ export function createDOMElement(
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
 
-      const node = isVRealElement(child)
+      const node = isVElement(child)
         ? createDOMElement(child, namespaceURI)
         : document.createTextNode(
             typeof child === "number" || typeof child === "bigint"

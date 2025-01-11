@@ -3,8 +3,7 @@ import {
   ChildTypes,
   Fragment,
   NonBooleanPrimitive,
-  VElement,
-  VRealNode
+  VNode,
 } from "./types.js";
 import { flattenVNodes } from "./utils.js";
 
@@ -19,9 +18,9 @@ export function createElement(
   type: string | typeof Fragment,
   props: { [key: string]: any } | null,
   ...children: ChildTypes[]
-): VElement {
+): VNode | VNode[] {
   const normalizedProps: { [key: string]: any } = props ? { ...props } : {};
-  const flatChildren: VRealNode[] = flattenVNodes(children);
+  const flatChildren: VNode[] = flattenVNodes(children);
   if (flatChildren.length > 0) {
     // Set children property only if dangerouslySetInnerHTML is not present
     if (!normalizedProps.dangerouslySetInnerHTML) {
@@ -32,14 +31,17 @@ export function createElement(
       );
     }
   }
-  return {
-    type,
-    tagName:
-      typeof type === "string"
-        ? KNOWN_ELEMENTS.get(type) || type.toUpperCase()
-        : undefined,
-    props: normalizedProps,
-  };
+
+  if (typeof type === "string") {
+    const result: VNode = {
+      type,
+      tagName: KNOWN_ELEMENTS.get(type) || type.toUpperCase(),
+      props: normalizedProps ?? {},
+    };
+    return result;
+  } else {
+    return flatChildren;
+  }
 }
 
 // As called from jsx-runtime.jsx function.
@@ -47,9 +49,9 @@ export function createElementJSX(
   type: string | typeof Fragment,
   props: { [key: string]: any } | null,
   key?: NonBooleanPrimitive
-): VElement {
+): VNode | VNode[] {
   props = props || {};
-  const flatChildren: VRealNode[] = props ? flattenVNodes(props.children) : [];
+  const flatChildren: VNode[] = props ? flattenVNodes(props.children) : [];
   if (key !== undefined) {
     props.key = key;
   }
@@ -64,12 +66,15 @@ export function createElementJSX(
       );
     }
   }
-  return {
-    type,
-    tagName:
-      typeof type === "string"
-        ? KNOWN_ELEMENTS.get(type) || type.toUpperCase()
-        : undefined,
-    props,
-  };
+
+  if (typeof type === "string") {
+    const result: VNode = {
+      type,
+      tagName: KNOWN_ELEMENTS.get(type) || type.toUpperCase(),
+      props: props ?? {},
+    };
+    return result;
+  } else {
+    return flatChildren;
+  }
 }

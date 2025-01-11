@@ -1,8 +1,8 @@
 import { flattenVNodes } from "./utils.js";
 
-export type ChildTypes = VNode | ChildTypes[];
+export type ChildTypes = VNode | boolean | null | undefined | ChildTypes[];
 
-export const Fragment = (props: { children?: ChildTypes }): VRealNode[] => {
+export const Fragment = (props: { children?: ChildTypes }): VNode[] => {
   return flattenVNodes(props.children);
 };
 
@@ -28,30 +28,19 @@ export interface ElementProps {
 
   xmlns?: string;
   class?: string;
-  children?: VRealNode[] | null;
+  children?: VNode[] | null;
   key?: NonBooleanPrimitive;
   dangerouslySetInnerHTML?: { __html: string };
   ref?: Ref<Node>;
 }
 
-/**
- * Virtual element structure.
- */
 export type VElement = {
-  type: string | FragmentType;
-  tagName?: string;
-  props: ElementProps;
-};
-
-export type VNode = VElement | Primitive | null | undefined;
-
-export type VRealElement = {
   type: string;
   tagName: string;
   props: ElementProps;
 };
 
-export type VRealNode = VRealElement | NonBooleanPrimitive;
+export type VNode = VElement | NonBooleanPrimitive;
 
 /**
  * Interface for components that support render suspension.

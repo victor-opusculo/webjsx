@@ -1,7 +1,7 @@
-import "../setup.js";
 import { expect } from "chai";
-import { createElement, Fragment } from "../../index.js";
-import { VElement, Ref } from "../../types.js";
+import { createElement } from "../../index.js";
+import { Ref, VElement } from "../../types.js";
+import "../setup.js";
 
 describe("createElement - Ref Handling", () => {
   it("should include function ref in props", () => {
@@ -24,19 +24,5 @@ describe("createElement - Ref Handling", () => {
     expect((vdom as VElement).props.ref).to.equal(refObject);
     expect((vdom as VElement).props.id).to.equal("ref-span");
     expect((vdom as VElement).props.children).to.deep.equal(["Span Content"]);
-  });
-
-  it("should handle ref with Fragment correctly", () => {
-    const ref: Ref = (node) => {};
-    const vdom = createElement(
-      Fragment,
-      { ref },
-      createElement("div", { id: "child-div" }, "Child Content")
-    );
-
-    expect((vdom as VElement).props.ref).to.equal(ref);
-    expect((vdom as VElement).props.children).to.deep.equal([
-      createElement("div", { id: "child-div" }, "Child Content"),
-    ]);
   });
 });

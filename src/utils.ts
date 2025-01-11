@@ -2,23 +2,11 @@ import { HTML_NAMESPACE } from "./constants.js";
 import {
   ChildTypes,
   ElementProps,
-  Fragment,
   NonBooleanPrimitive,
   VElement,
   VNode,
-  VRealElement,
-  VRealNode,
-  WebJSXManagedElement,
+  WebJSXManagedElement
 } from "./types.js";
-
-/**
- * Checks if a virtual node is a Fragment.
- * @param vnode Virtual node to check
- * @returns True if node is a Fragment
- */
-export function isFragment(vnode: VNode | null | undefined): vnode is VElement {
-  return typeof vnode === "object" && vnode !== null && vnode.type === Fragment;
-}
 
 /**
  * Flattens nested virtual nodes by replacing Fragments with their children.
@@ -27,16 +15,11 @@ export function isFragment(vnode: VNode | null | undefined): vnode is VElement {
  */
 export function flattenVNodes(
   vnodes: ChildTypes,
-  result: VRealNode[] = []
-): VRealNode[] {
+  result: VNode[] = []
+): VNode[] {
   if (Array.isArray(vnodes)) {
     for (const vnode of vnodes) {
       flattenVNodes(vnode, result);
-    }
-  } else if (isFragment(vnodes)) {
-    const children = vnodes.props.children;
-    if (children !== undefined) {
-      flattenVNodes(children, result);
     }
   } else if (!mustIgnoreVNode(vnodes)) {
     result.push(vnodes);
@@ -44,7 +27,7 @@ export function flattenVNodes(
 
   return result;
 }
-export function mustIgnoreVNode(vnode: VNode | null | undefined) {
+export function mustIgnoreVNode(vnode: VNode | boolean | null | undefined) {
   return vnode === null || vnode === undefined || typeof vnode === "boolean";
 }
 
@@ -82,7 +65,7 @@ export function assignRef(node: Node, ref: any): void {
   }
 }
 
-export function isVRealElement(vnode: VRealNode): vnode is VRealElement {
+export function isVElement(vnode: VNode): vnode is VElement {
   const typeofVNode = typeof vnode;
   return (
     typeofVNode !== "string" &&
@@ -92,7 +75,7 @@ export function isVRealElement(vnode: VRealNode): vnode is VRealElement {
 }
 
 export function isNonBooleanPrimitive(
-  vnode: VRealNode
+  vnode: VNode
 ): vnode is NonBooleanPrimitive {
   const typeofVNode = typeof vnode;
 

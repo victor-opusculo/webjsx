@@ -1,11 +1,11 @@
 import { updateAttributes } from "./attributes.js";
 import { createDOMElement } from "./createDOMElement.js";
 import {
+  ChildTypes,
   NonBooleanPrimitive,
+  VElement,
   VNode,
-  VRealElement,
-  VRealNode,
-  WebJSXManagedElement,
+  WebJSXManagedElement
 } from "./types.js";
 import {
   assignRef,
@@ -15,16 +15,16 @@ import {
   getWebJSXChildNodeCache,
   getWebJSXProps,
   isNonBooleanPrimitive,
-  isVRealElement,
+  isVElement,
   setWebJSXChildNodeCache,
   setWebJSXProps,
 } from "./utils.js";
 
 type DOMChange =
-  | { type: "create"; vnode: VRealNode }
-  | { type: "update"; node: Node; newVNode: VRealNode; oldVNode: VRealNode };
+  | { type: "create"; vnode: VNode }
+  | { type: "update"; node: Node; newVNode: VNode; oldVNode: VNode };
 
-export function applyDiff(parent: Element | ShadowRoot, vnodes: VNode): void {
+export function applyDiff(parent: Element | ShadowRoot, vnodes: ChildTypes): void {
   const newVNodes = flattenVNodes(vnodes);
   const newNodes = diffChildren(parent, newVNodes);
   const props = getWebJSXProps(parent);
@@ -34,7 +34,7 @@ export function applyDiff(parent: Element | ShadowRoot, vnodes: VNode): void {
 
 function diffChildren(
   parent: Element | ShadowRoot,
-  newVNodes: VRealNode[]
+  newVNodes: VNode[]
 ): Node[] {
   const parentProps = getWebJSXProps(parent);
   const oldVNodes = parentProps.children ?? [];
@@ -50,7 +50,7 @@ function diffChildren(
     const newVNode = newVNodes[i];
     const oldVNode = oldVNodes[i];
     const currentNode = originalChildNodes[i];
-    const newKey = isVRealElement(newVNode) ? newVNode.props.key : undefined;
+    const newKey = isVElement(newVNode) ? newVNode.props.key : undefined;
 
     if (newKey !== undefined) {
       if (!keyedMap) {
@@ -109,15 +109,15 @@ function diffChildren(
 }
 
 function canUpdateVNodes(
-  newVNode: VRealNode,
-  oldVNode: VRealNode | undefined
+  newVNode: VNode,
+  oldVNode: VNode | undefined
 ): boolean {
   if (!oldVNode) return false;
 
   if (isNonBooleanPrimitive(newVNode) && isNonBooleanPrimitive(oldVNode)) {
     return true;
   } else {
-    if (isVRealElement(oldVNode) && isVRealElement(newVNode)) {
+    if (isVElement(oldVNode) && isVElement(newVNode)) {
       const oldKey = oldVNode.props.key;
       const newKey = newVNode.props.key;
 
@@ -144,7 +144,7 @@ function applyChanges(
   for (const change of changes) {
     if (change.type === "create") {
       let node: Node | undefined = undefined;
-      if (isVRealElement(change.vnode)) {
+      if (isVElement(change.vnode)) {
         node = createDOMElement(change.vnode, getNamespaceURI(parent));
       } else {
         node = document.createTextNode(
@@ -162,15 +162,15 @@ function applyChanges(
       nodes.push(node);
     } else {
       const { node, newVNode, oldVNode } = change;
-      if (isVRealElement(newVNode)) {
-        const oldProps = (oldVNode as VRealElement)?.props || {};
+      if (isVElement(newVNode)) {
+        const oldProps = (oldVNode as VElement)?.props || {};
         const newProps = newVNode.props;
         updateAttributes(node as Element, newProps, oldProps);
 
         if (newVNode.props.key !== undefined) {
           (node as WebJSXManagedElement).__webjsx_key = newVNode.props.key;
         } else {
-          if ((oldVNode as VRealElement).props?.key) {
+          if ((oldVNode as VElement).props?.key) {
             delete (node as any).__webjsx_key;
           }
         }
