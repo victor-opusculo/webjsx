@@ -1,5 +1,5 @@
 import { updateAttributes } from "./attributes.js";
-import { createNode } from "./createNode.js";
+import { createDOMElement } from "./createDOMElement.js";
 import {
   NonBooleanPrimitive,
   VNode,
@@ -145,7 +145,7 @@ function applyChanges(
     if (change.type === "create") {
       let node: Node | undefined = undefined;
       if (isVRealElement(change.vnode)) {
-        node = createNode(change.vnode, getNamespaceURI(parent));
+        node = createDOMElement(change.vnode, getNamespaceURI(parent));
       } else {
         node = document.createTextNode(
           typeof change.vnode === "number" || typeof change.vnode === "bigint"

@@ -211,15 +211,15 @@ A special type used to group multiple elements without adding extra nodes to the
 </>
 ```
 
-### `createNode(vnode)`
+### `createDOMElement(vElement)`
 
-You probably won't need to use this directly. But if you want to convert a virtual DOM node into a real DOM node you can use `createNode`.
+You probably won't need to use this directly. But if you want to convert a virtual DOM Element into a real DOM Element you can use `createDOMElement`.
 
 **Usage:**
 
 ```js
 const vnode = <div>Hello, world!</div>;
-const domNode = webjsx.createNode(vnode);
+const domNode = webjsx.createDOMElement(vnode);
 document.body.appendChild(domNode);
 ```
 
