@@ -16,12 +16,12 @@ describe("createElement - Basic Creation", () => {
 
   it("should handle empty props", () => {
     const vdom = createElement("div", null);
-    expect((vdom as VElement).props).to.deep.equal({});
+    expect((vdom as VElement).props).to.deep.equal({ children: [] });
   });
 
   it("should handle no children", () => {
     const vdom = createElement("img", { src: "image.png", alt: "An image" });
-    expect((vdom as VElement).props.children).to.be.undefined;
+    expect((vdom as VElement).props.children?.length).to.equal(0);
     expect((vdom as VElement).props.src).to.equal("image.png");
     expect((vdom as VElement).props.alt).to.equal("An image");
   });

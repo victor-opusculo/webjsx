@@ -14,6 +14,7 @@ describe("createElement - dangerouslySetInnerHTML", () => {
     expect(vdom).to.be.an("object");
     expect((vdom as VElement).type).to.equal("div");
     expect((vdom as VElement).props).to.deep.equal({
+      children: [],
       dangerouslySetInnerHTML: { __html: htmlContent },
       id: "html-div",
     });
@@ -29,6 +30,7 @@ describe("createElement - dangerouslySetInnerHTML", () => {
     );
 
     expect((vdom as VElement).props).to.deep.equal({
+      children: [],
       dangerouslySetInnerHTML: { __html: htmlContent },
       id: "html-div",
     });
