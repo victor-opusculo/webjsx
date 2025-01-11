@@ -41,7 +41,7 @@ export type VElement = {
   props: ElementProps;
 };
 
-export type VNode = VElement | Primitive;
+export type VNode = VElement | Primitive | null | undefined;
 
 export type VRealElement = {
   type: string;
