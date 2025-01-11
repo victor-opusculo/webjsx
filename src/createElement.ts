@@ -1,10 +1,5 @@
 import { KNOWN_ELEMENTS } from "./elementTags.js";
-import {
-  ChildTypes,
-  Fragment,
-  NonBooleanPrimitive,
-  VNode,
-} from "./types.js";
+import { ChildTypes, Fragment, NonBooleanPrimitive, VNode } from "./types.js";
 import { flattenVNodes } from "./utils.js";
 
 /**
@@ -19,28 +14,27 @@ export function createElement(
   props: { [key: string]: any } | null,
   ...children: ChildTypes[]
 ): VNode | VNode[] {
-  const normalizedProps: { [key: string]: any } = props ? { ...props } : {};
-  const flatChildren: VNode[] = flattenVNodes(children);
-  if (flatChildren.length > 0) {
-    // Set children property only if dangerouslySetInnerHTML is not present
-    if (!normalizedProps.dangerouslySetInnerHTML) {
-      normalizedProps.children = flatChildren;
-    } else {
-      console.warn(
-        "WebJSX: Ignoring children since dangerouslySetInnerHTML is set."
-      );
-    }
-  }
-
   if (typeof type === "string") {
+    const normalizedProps: { [key: string]: any } = props ? props : {};
+    const flatChildren: VNode[] = flattenVNodes(children);
+    if (flatChildren.length > 0) {
+      // Set children property only if dangerouslySetInnerHTML is not present
+      if (!normalizedProps.dangerouslySetInnerHTML) {
+        normalizedProps.children = flatChildren;
+      } else {
+        console.warn(
+          "WebJSX: Ignoring children since dangerouslySetInnerHTML is set."
+        );
+      }
+    }
     const result: VNode = {
       type,
-      tagName: KNOWN_ELEMENTS.get(type) || type.toUpperCase(),
+      tagName: KNOWN_ELEMENTS.get(type) ?? type.toUpperCase(),
       props: normalizedProps ?? {},
     };
     return result;
   } else {
-    return flatChildren;
+    return flattenVNodes(children);
   }
 }
 
@@ -50,31 +44,32 @@ export function createElementJSX(
   props: { [key: string]: any } | null,
   key?: NonBooleanPrimitive
 ): VNode | VNode[] {
-  props = props || {};
-  const flatChildren: VNode[] = props ? flattenVNodes(props.children) : [];
-  if (key !== undefined) {
-    props.key = key;
-  }
-  if (flatChildren.length > 0) {
-    // Set children property only if dangerouslySetInnerHTML is not present
-    if (!props.dangerouslySetInnerHTML) {
-      props.children = flatChildren;
-    } else {
-      props.children = [];
-      console.warn(
-        "WebJSX: Ignoring children since dangerouslySetInnerHTML is set."
-      );
-    }
-  }
-
   if (typeof type === "string") {
+    props = props || {};
+    const flatChildren: VNode[] = props ? flattenVNodes(props.children) : [];
+    if (key !== undefined) {
+      props.key = key;
+    }
+    if (flatChildren.length > 0) {
+      // Set children property only if dangerouslySetInnerHTML is not present
+      if (!props.dangerouslySetInnerHTML) {
+        props.children = flatChildren;
+      } else {
+        props.children = [];
+        console.warn(
+          "WebJSX: Ignoring children since dangerouslySetInnerHTML is set."
+        );
+      }
+    }
+
     const result: VNode = {
       type,
-      tagName: KNOWN_ELEMENTS.get(type) || type.toUpperCase(),
+      tagName: KNOWN_ELEMENTS.get(type) ?? type.toUpperCase(),
       props: props ?? {},
     };
     return result;
   } else {
+    const flatChildren: VNode[] = props ? flattenVNodes(props.children) : [];    
     return flatChildren;
   }
 }

@@ -5,7 +5,7 @@ import {
   NonBooleanPrimitive,
   VElement,
   VNode,
-  WebJSXManagedElement
+  WebJSXManagedElement,
 } from "./types.js";
 
 /**
@@ -21,14 +21,25 @@ export function flattenVNodes(
     for (const vnode of vnodes) {
       flattenVNodes(vnode, result);
     }
-  } else if (!mustIgnoreVNode(vnodes)) {
+  } else if (isValidVNode(vnodes)) {
     result.push(vnodes);
   }
 
   return result;
 }
-export function mustIgnoreVNode(vnode: VNode | boolean | null | undefined) {
-  return vnode === null || vnode === undefined || typeof vnode === "boolean";
+
+export function isValidVNode(
+  vnode: VNode | boolean | null | undefined
+): vnode is VNode {
+  const typeofVNode = typeof vnode;
+  return (
+    vnode !== null &&
+    vnode !== undefined &&
+    (typeofVNode === "string" ||
+      typeofVNode === "object" ||
+      typeofVNode === "number" ||
+      typeofVNode === "bigint")
+  );
 }
 
 /* Get Child Nodes Efficiently */
