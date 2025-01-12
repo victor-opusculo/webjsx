@@ -5,7 +5,7 @@ import {
   NonBooleanPrimitive,
   VElement,
   VNode,
-  WebJSXManagedElement
+  WebJSXManagedElement,
 } from "./types.js";
 import {
   assignRef,
@@ -24,7 +24,10 @@ type DOMChange =
   | { type: "create"; vnode: VNode }
   | { type: "update"; node: Node; newVNode: VNode; oldVNode: VNode };
 
-export function applyDiff(parent: Element | ShadowRoot, vnodes: ChildTypes): void {
+export function applyDiff(
+  parent: Element | ShadowRoot,
+  vnodes: ChildTypes
+): void {
   const newVNodes = flattenVNodes(vnodes);
   const newNodes = diffChildren(parent, newVNodes);
   const props = getWebJSXProps(parent);
@@ -39,7 +42,10 @@ function diffChildren(
   const parentProps = getWebJSXProps(parent);
   const oldVNodes = parentProps.children ?? [];
   const changes: DOMChange[] = [];
-  let keyedMap: Map<NonBooleanPrimitive, Node> | null = null;
+  let keyedMap: Map<
+    NonBooleanPrimitive,
+    { node: Node; oldVNode: VNode }
+  > | null = null;
 
   const originalChildNodes =
     getWebJSXChildNodeCache(parent) ?? getChildNodes(parent);
@@ -57,21 +63,24 @@ function diffChildren(
         hasKeyedNodes = true;
         keyedMap = new Map();
 
-        for (const node of originalChildNodes) {
-          const key = (node as WebJSXManagedElement).__webjsx_key;
+        for (let j = 0; j < oldVNodes.length; j++) {
+          const matchingVNode = oldVNodes[j];
+          const key = (matchingVNode as VElement).props.key;
           if (key !== undefined) {
-            keyedMap.set(key, node);
+            const node = originalChildNodes[j];
+            keyedMap.set(key, { node, oldVNode: matchingVNode });
           }
         }
       }
 
       const keyedNode = keyedMap.get(newKey);
+
       if (keyedNode) {
         changes.push({
           type: "update",
-          node: keyedNode,
+          node: keyedNode.node,
           newVNode,
-          oldVNode,
+          oldVNode: keyedNode.oldVNode,
         });
       } else {
         changes.push({ type: "create", vnode: newVNode });
