@@ -52,6 +52,8 @@ function diffChildren(
 
   let hasKeyedNodes = false;
 
+  let nodeOrderUnchanged = true;
+
   for (let i = 0; i < newVNodes.length; i++) {
     const newVNode = newVNodes[i];
     const oldVNode = oldVNodes[i];
@@ -76,6 +78,9 @@ function diffChildren(
       const keyedNode = keyedMap.get(newKey);
 
       if (keyedNode) {
+        if (keyedNode.oldVNode !== oldVNode) {
+          nodeOrderUnchanged = false;
+        }
         changes.push({
           type: "update",
           node: keyedNode.node,
@@ -83,6 +88,7 @@ function diffChildren(
           oldVNode: keyedNode.oldVNode,
         });
       } else {
+        nodeOrderUnchanged = false;
         changes.push({ type: "create", vnode: newVNode });
       }
     } else {
@@ -98,6 +104,7 @@ function diffChildren(
           oldVNode,
         });
       } else {
+        nodeOrderUnchanged = false;
         changes.push({ type: "create", vnode: newVNode });
       }
     }
@@ -106,7 +113,8 @@ function diffChildren(
   const { nodes, lastNode: lastPlacedNode } = applyChanges(
     parent,
     changes,
-    originalChildNodes
+    originalChildNodes,
+    nodeOrderUnchanged
   );
 
   // Remove any remaining nodes
@@ -144,7 +152,8 @@ function canUpdateVNodes(
 function applyChanges(
   parent: Element | ShadowRoot,
   changes: DOMChange[],
-  originalNodes: Node[]
+  originalNodes: Node[],
+  nodeOrderUnchanged: boolean
 ): { nodes: Node[]; lastNode: Node | null } {
   const nodes: Node[] = [];
 
@@ -200,13 +209,15 @@ function applyChanges(
         }
       }
 
-      if (!lastPlacedNode) {
-        if (node !== originalNodes[0]) {
-          parent.prepend(node);
-        }
-      } else {
-        if (lastPlacedNode.nextSibling !== node) {
-          parent.insertBefore(node, lastPlacedNode.nextSibling ?? null);
+      if (!nodeOrderUnchanged) {
+        if (!lastPlacedNode) {
+          if (node !== originalNodes[0]) {
+            parent.prepend(node);
+          }
+        } else {
+          if (lastPlacedNode.nextSibling !== node) {
+            parent.insertBefore(node, lastPlacedNode.nextSibling ?? null);
+          }
         }
       }
       lastPlacedNode = node;
