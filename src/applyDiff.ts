@@ -121,7 +121,7 @@ function canUpdateVNodes(
   newVNode: VNode,
   oldVNode: VNode | undefined
 ): boolean {
-  if (!oldVNode) return false;
+  if (oldVNode === undefined) return false;
 
   if (isNonBooleanPrimitive(newVNode) && isNonBooleanPrimitive(oldVNode)) {
     return true;
@@ -180,7 +180,7 @@ function applyChanges(
           (node as WebJSXManagedElement).__webjsx_key = newVNode.props.key;
         } else {
           if ((oldVNode as VElement).props?.key) {
-            delete (node as any).__webjsx_key;
+            delete (node as WebJSXManagedElement).__webjsx_key;
           }
         }
 

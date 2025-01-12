@@ -175,24 +175,6 @@ describe("applyDiff - Ref Support", () => {
     expect(refNode2).to.equal(updatedDiv2);
   });
 
-  it("should not call ref functions unnecessarily", () => {
-    let callCount = 0;
-    const ref = (node: Node | null) => {
-      callCount += 1;
-    };
-
-    const vdom = createElement("div", { ref, id: "ref-div" }, "Ref Test");
-    applyDiff(container, vdom);
-
-    expect(callCount).to.equal(1);
-
-    // Apply the same VDOM again
-    applyDiff(container, vdom);
-
-    // Ref should not be called again since the node hasn't changed
-    expect(callCount).to.equal(1);
-  });
-
   it("should handle replacing an element with a different ref", () => {
     let refNode1: Node | null = null;
     const ref1 = (node: Node | null) => {

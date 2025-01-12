@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   definesRenderSuspension,
   withRenderSuspension,
@@ -34,7 +35,7 @@ function updateEventListener(
  * @param key Property or attribute name
  * @param value New value to set
  */
-function updatePropOrAttr(el: Element, key: string, value: any): void {
+function updatePropOrAttr(el: Element, key: string, value: unknown): void {
   if (el instanceof HTMLElement) {
     if (key in el) {
       // Fast path: property exists on HTMLElement
@@ -97,7 +98,7 @@ function updateAttributesCore(
       updateEventListener(
         el,
         eventName,
-        value,
+        value as EventListenerOrEventListenerObject,
         (el as WebJSXManagedElement).__webjsx_listeners?.[eventName]
       );
     } else if (value !== oldProps[key]) {
@@ -125,7 +126,7 @@ function updateAttributesCore(
       !(key in newProps) &&
       key !== "children" &&
       key !== "key" &&
-      key !== "dangerouslySetInnerHTML" && 
+      key !== "dangerouslySetInnerHTML" &&
       key !== "nodes"
     ) {
       if (key.startsWith("on")) {
@@ -152,7 +153,7 @@ function updateAttributesCore(
  */
 export function setAttributes(
   el: Element,
-  props: { [key: string]: any }
+  props: { [key: string]: unknown }
 ): void {
   if (definesRenderSuspension(el)) {
     withRenderSuspension(el, () => {
@@ -171,8 +172,8 @@ export function setAttributes(
  */
 export function updateAttributes(
   el: Element,
-  newProps: { [key: string]: any },
-  oldProps: { [key: string]: any }
+  newProps: { [key: string]: unknown },
+  oldProps: { [key: string]: unknown }
 ): void {
   if (definesRenderSuspension(el)) {
     withRenderSuspension(el, () => {

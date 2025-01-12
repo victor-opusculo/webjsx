@@ -1,6 +1,6 @@
 import { WebJSXAwareComponent } from "./types.js";
 
-export function definesRenderSuspension<T>(el: Element) {
+export function definesRenderSuspension(el: Element) {
   return !!(el as WebJSXAwareComponent).__webjsx_suspendRendering;
 }
 

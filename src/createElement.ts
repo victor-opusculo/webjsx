@@ -11,11 +11,11 @@ import { flattenVNodes } from "./utils.js";
  */
 export function createElement(
   type: string | typeof Fragment,
-  props: { [key: string]: any } | null,
+  props: { [key: string]: unknown } | null,
   ...children: ChildTypes[]
 ): VNode | VNode[] {
   if (typeof type === "string") {
-    const normalizedProps: { [key: string]: any } = props ? props : {};
+    const normalizedProps: { [key: string]: unknown } = props ? props : {};
 
     const flatChildren: VNode[] = flattenVNodes(children);
 
@@ -47,13 +47,15 @@ export function createElement(
 // As called from jsx-runtime.jsx function.
 export function createElementJSX(
   type: string | typeof Fragment,
-  props: { [key: string]: any } | null,
+  props: { [key: string]: unknown } | null,
   key?: NonBooleanPrimitive
 ): VNode | VNode[] {
   if (typeof type === "string") {
     props = props || {};
-    const flatChildren: VNode[] = props ? flattenVNodes(props.children) : [];
-    
+    const flatChildren: VNode[] = props
+      ? flattenVNodes(props.children as ChildTypes)
+      : [];
+
     if (key !== undefined) {
       props.key = key;
     }
@@ -79,7 +81,9 @@ export function createElementJSX(
     };
     return result;
   } else {
-    const flatChildren: VNode[] = props ? flattenVNodes(props.children) : [];
+    const flatChildren: VNode[] = props
+      ? flattenVNodes(props.children as ChildTypes)
+      : [];
     return flatChildren;
   }
 }

@@ -1,5 +1,5 @@
-import { createElement, createElementJSX } from "./createElement.js";
-import { Fragment } from "./types.js";
+import { createElementJSX } from "./createElement.js";
+import { Fragment, NonBooleanPrimitive } from "./types.js";
 export * from "./jsx.js";
 
 export { Fragment };
@@ -11,7 +11,13 @@ export { Fragment };
  * @param key Optional key for element identification
  * @returns Virtual element
  */
-export function jsx(type: any, props: any, key: any) {
+export function jsx(
+  type: string | typeof Fragment,
+  props: {
+    [key: string]: unknown;
+  } | null,
+  key: NonBooleanPrimitive
+) {
   return createElementJSX(type, props, key);
 }
 
@@ -19,7 +25,13 @@ export function jsx(type: any, props: any, key: any) {
  * JSX transform factory for elements with multiple children.
  * Functionally identical to jsx() in this implementation.
  */
-export function jsxs(type: any, props: any, key: any) {
+export function jsxs(
+  type: string | typeof Fragment,
+  props: {
+    [key: string]: unknown;
+  } | null,
+  key: NonBooleanPrimitive
+) {
   return jsx(type, props, key);
 }
 
@@ -27,7 +39,13 @@ export function jsxs(type: any, props: any, key: any) {
  * Development mode JSX transform factory.
  * Currently identical to jsx() in this implementation.
  */
-export function jsxDEV(type: any, props: any, key: any) {
+export function jsxDEV(
+  type: string | typeof Fragment,
+  props: {
+    [key: string]: unknown;
+  } | null,
+  key: NonBooleanPrimitive
+) {
   return jsx(type, props, key);
 }
 

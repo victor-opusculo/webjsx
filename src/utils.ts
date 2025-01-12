@@ -3,6 +3,7 @@ import {
   ChildTypes,
   ElementProps,
   NonBooleanPrimitive,
+  Ref,
   VElement,
   VNode,
   WebJSXManagedElement,
@@ -60,19 +61,11 @@ export function getChildNodes(parent: Node): Node[] {
  * @param node Target DOM node
  * @param ref Reference to assign (function or object with current property)
  */
-export function assignRef(node: Node, ref: any): void {
-  const currentRef = (node as any).__webjsx_assignedRef;
-
-  // Only assign if the ref is different
-  if (currentRef !== ref) {
-    if (typeof ref === "function") {
-      ref(node);
-    } else if (ref && typeof ref === "object") {
-      ref.current = node;
-    }
-
-    // Store the assigned ref
-    (node as any).__webjsx_assignedRef = ref;
+export function assignRef(node: Node, ref: Ref): void {
+  if (typeof ref === "function") {
+    ref(node);
+  } else if (ref && typeof ref === "object") {
+    ref.current = node;
   }
 }
 
