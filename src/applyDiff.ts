@@ -110,19 +110,23 @@ function diffChildren(
     }
   }
 
-  const { nodes, lastNode: lastPlacedNode } = applyChanges(
-    parent,
-    changes,
-    originalChildNodes,
-    nodeOrderUnchanged
-  );
+  if (changes.length) {
+    const { nodes, lastNode: lastPlacedNode } = applyChanges(
+      parent,
+      changes,
+      originalChildNodes,
+      nodeOrderUnchanged
+    );
 
-  // Remove any remaining nodes
-  while (lastPlacedNode?.nextSibling) {
-    parent.removeChild(lastPlacedNode.nextSibling);
+    // Remove any remaining nodes
+    while (lastPlacedNode?.nextSibling) {
+      parent.removeChild(lastPlacedNode.nextSibling);
+    }
+
+    return nodes;
+  } else {
+    return originalChildNodes;
   }
-
-  return nodes;
 }
 
 function canUpdateVNodes(
