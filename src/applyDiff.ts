@@ -169,11 +169,7 @@ function applyChanges(
       if (isVElement(change.vnode)) {
         node = createDOMElement(change.vnode, getNamespaceURI(parent));
       } else {
-        node = document.createTextNode(
-          typeof change.vnode === "number" || typeof change.vnode === "bigint"
-            ? change.vnode.toString()
-            : change.vnode
-        );
+        node = document.createTextNode(`${change.vnode}`);
       }
       if (!lastPlacedNode) {
         parent.prepend(node);
@@ -208,8 +204,7 @@ function applyChanges(
         }
       } else {
         if (newVNode !== oldVNode) {
-          node.textContent =
-            typeof newVNode !== "string" ? newVNode.toString() : newVNode;
+          node.textContent = `${newVNode}`;
         }
       }
 

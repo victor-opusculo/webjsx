@@ -55,7 +55,7 @@ function updatePropOrAttr(el: Element, key: string, value: unknown): void {
   const isSVG = el.namespaceURI === "http://www.w3.org/2000/svg";
   if (isSVG) {
     if (value !== undefined && value !== null) {
-      el.setAttribute(key, value.toString());
+      el.setAttribute(key, `${value}`);
     } else {
       el.removeAttribute(key);
     }

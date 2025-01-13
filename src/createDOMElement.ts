@@ -1,9 +1,6 @@
 import { setAttributes } from "./attributes.js";
 import { SVG_NAMESPACE } from "./constants.js";
-import {
-  VElement,
-  WebJSXManagedElement
-} from "./types.js";
+import { VElement, WebJSXManagedElement } from "./types.js";
 import {
   assignRef,
   isVElement,
@@ -62,11 +59,7 @@ export function createDOMElement(
 
       const node = isVElement(child)
         ? createDOMElement(child, namespaceURI)
-        : document.createTextNode(
-            typeof child === "number" || typeof child === "bigint"
-              ? child.toString()
-              : child
-          );
+        : document.createTextNode(`${child}`);
 
       nodes.push(node);
       el.appendChild(node);
