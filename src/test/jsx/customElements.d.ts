@@ -1,31 +1,33 @@
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      "my-jsx-element": {
-        title?: string;
-        count?: number;
-      };
-      "nested-element": {
-        label?: string;
-        value?: string;
-      };
-      "parent-element": {
+      "my-shadow-element": {
         title?: string;
         count?: number;
         children?: any;
       };
-      "clickable-element": {
-        onclick?: (event: Event) => void;
+      "nested-shadow-element": {
+        label?: string;
+        value?: string;
+        children?: any;
       };
-      "dynamic-render-element": {
+      "parent-shadow-element": {
         title?: string;
         count?: number;
+        children?: any;
+      };
+      // Keep these type declarations for other potential tests
+      "clickable-element": {
+        onclick?: (event: Event) => void;
+        children?: any;
       };
       "my-slot-element": {
         title?: string;
         children?: any;
       };
-      "named-slot-element": {};
+      "named-slot-element": {
+        children?: any;
+      };
       "my-custom-slot-element": {
         children?: any;
       };

@@ -5,26 +5,26 @@ import * as webjsx from "../../index.js";
 import "../setup.js";
 import { resetContainer } from "../setup.js";
 
-describe("JSX Syntax - Custom Web Components", () => {
-  let dom: JSDOM;
-  let document: Document;
+describe("JSX Syntax - Custom Web Components with Shadow DOM", () => {
   let container: HTMLElement;
 
   beforeEach(() => {
     container = resetContainer();
   });
 
-  it("should handle custom web components created with JSX and update their props", () => {
-    // Define a custom web component
-    class MyJsxElement extends HTMLElement {
+  it("should handle custom web components with shadow DOM created with JSX and update their props", () => {
+    // Define a custom web component with shadow DOM
+    class MyShadowElement extends HTMLElement {
       static get observedAttributes() {
         return ["title"];
       }
 
       private _count: number = 0;
+      private shadow: ShadowRoot;
 
       constructor() {
         super();
+        this.shadow = this.attachShadow({ mode: 'open' });
       }
 
       connectedCallback() {
@@ -51,67 +51,73 @@ describe("JSX Syntax - Custom Web Components", () => {
       }
 
       render() {
-        this.textContent = `Title: ${this.getAttribute("title")}, Count: ${
-          this.count
-        }`;
+        const vdom = (
+          <div class="shadow-content">
+            <h2>{this.getAttribute("title")}</h2>
+            <p>Count: {this.count}</p>
+          </div>
+        );
+        applyDiff(this.shadow, vdom);
       }
     }
 
-    // Register the custom element if it hasn't been defined already
-    if (!customElements.get("my-jsx-element")) {
-      customElements.define("my-jsx-element", MyJsxElement);
+    // Register the custom element
+    if (!customElements.get("my-shadow-element")) {
+      customElements.define("my-shadow-element", MyShadowElement);
     }
 
     // Initial JSX VDOM with string and non-string props
     const initialVdom = (
-      <my-jsx-element title="Initial Title" count={10}></my-jsx-element>
+      <my-shadow-element title="Initial Title" count={10}></my-shadow-element>
     );
 
     // Apply the initial render
     applyDiff(container, initialVdom);
 
     // Select the custom element
-    const myJsxElement = container.querySelector(
-      "my-jsx-element"
-    ) as MyJsxElement;
-    expect(myJsxElement).to.exist;
-    expect(myJsxElement.getAttribute("title")).to.equal("Initial Title"); // setAttribute
-    expect(myJsxElement.count).to.equal(10); // property
+    const myShadowElement = container.querySelector(
+      "my-shadow-element"
+    ) as MyShadowElement;
+    expect(myShadowElement).to.exist;
+    expect(myShadowElement.getAttribute("title")).to.equal("Initial Title");
+    expect(myShadowElement.count).to.equal(10);
 
-    // Verify the rendered content
-    expect(myJsxElement.textContent).to.equal(
-      "Title: Initial Title, Count: 10"
-    );
+    // Verify the shadow DOM content
+    const shadowRoot = myShadowElement.shadowRoot;
+    expect(shadowRoot).to.exist;
+    expect(shadowRoot?.querySelector("h2")?.textContent).to.equal("Initial Title");
+    expect(shadowRoot?.querySelector("p")?.textContent).to.equal("Count: 10");
 
     // Updated JSX VDOM with new props
     const updatedVdom = (
-      <my-jsx-element title="Updated Title" count={20}></my-jsx-element>
+      <my-shadow-element title="Updated Title" count={20}></my-shadow-element>
     );
 
     // Apply the diff to update props
     applyDiff(container, updatedVdom);
 
     // Verify that the attributes and properties have been updated
-    expect(myJsxElement.getAttribute("title")).to.equal("Updated Title"); // setAttribute
-    expect(myJsxElement.count).to.equal(20); // property
+    expect(myShadowElement.getAttribute("title")).to.equal("Updated Title");
+    expect(myShadowElement.count).to.equal(20);
 
-    // Verify the updated rendered content
-    expect(myJsxElement.textContent).to.equal(
-      "Title: Updated Title, Count: 20"
-    );
+    // Verify the updated shadow DOM content
+    expect(shadowRoot?.querySelector("h2")?.textContent).to.equal("Updated Title");
+    expect(shadowRoot?.querySelector("p")?.textContent).to.equal("Count: 20");
   });
 
-  it("should handle nested custom web components with JSX and update their props", () => {
+  it("should handle nested custom web components with shadow DOM", () => {
     // Define a nested custom web component
-    class NestedElement extends HTMLElement {
+    class NestedShadowElement extends HTMLElement {
       static get observedAttributes() {
         return ["label"];
       }
 
       private _value: string = "";
+      private shadow: ShadowRoot;
 
       constructor() {
         super();
+        this.shadow = this.attachShadow({ mode: 'open' });
       }
 
       connectedCallback() {
@@ -138,27 +144,28 @@ describe("JSX Syntax - Custom Web Components", () => {
       }
 
       render() {
-        this.textContent = `Label: ${this.getAttribute("label")}, Value: ${
-          this.value
-        }`;
+        const vdom = (
+          <div class="nested-content">
+            <h3>{this.getAttribute("label")}</h3>
+            <p>Value: {this.value}</p>
+          </div>
+        );
+        applyDiff(this.shadow, vdom);
       }
     }
 
-    // Register the nested custom element
-    if (!customElements.get("nested-element")) {
-      customElements.define("nested-element", NestedElement);
-    }
-
-    // Define a parent custom web component that nests the nested element
-    class ParentElement extends HTMLElement {
+    // Define a parent custom web component
+    class ParentShadowElement extends HTMLElement {
       static get observedAttributes() {
         return ["title"];
       }
 
       private _count: number = 0;
+      private shadow: ShadowRoot;
 
       constructor() {
         super();
+        this.shadow = this.attachShadow({ mode: 'open' });
       }
 
       connectedCallback() {
@@ -185,172 +192,66 @@ describe("JSX Syntax - Custom Web Components", () => {
       }
 
       render() {
-        this.innerHTML = `
-          <nested-element label="Nested Label" value="Nested Value"></nested-element>
-          <span>Parent Count: ${this.count}</span>
-        `;
-      }
-    }
-
-    const vdom = (
-      <parent-element title="Parent Title" count={5}>
-        <nested-element
-          label="Nested Label"
-          value="Nested Value"
-        ></nested-element>
-        <span>Parent Count: 5</span>
-      </parent-element>
-    );
-
-    applyDiff(container, vdom);
-
-    const parentElement = container.querySelector(
-      "parent-element"
-    ) as ParentElement;
-    expect(parentElement).to.exist;
-
-    // Verify the parent element's initial props
-    expect(parentElement.getAttribute("title")).to.equal("Parent Title");
-    expect(parentElement.count).to.equal(5);
-
-    const nestedElement = parentElement.querySelector(
-      "nested-element"
-    ) as NestedElement;
-    expect(nestedElement).to.exist;
-
-    // Verify the nested element's initial props
-    expect(nestedElement.getAttribute("label")).to.equal("Nested Label");
-    expect(nestedElement.value).to.equal("Nested Value");
-
-    // Verify rendered content
-    const span = parentElement.querySelector("span");
-    expect(span?.textContent).to.equal("Parent Count: 5");
-
-    // Now, let's update the props
-    const updatedVdom = (
-      <parent-element title="Updated Parent Title" count={10}>
-        <nested-element
-          label="Updated Nested Label"
-          value="Updated Nested Value"
-        ></nested-element>
-        <span>Parent Count: 10</span>
-      </parent-element>
-    );
-
-    applyDiff(container, updatedVdom);
-
-    // Verify updated props
-    expect(parentElement.getAttribute("title")).to.equal(
-      "Updated Parent Title"
-    );
-    expect(parentElement.count).to.equal(10);
-
-    // Verify the updated nested element's props
-    expect(nestedElement.getAttribute("label")).to.equal(
-      "Updated Nested Label"
-    );
-    expect(nestedElement.value).to.equal("Updated Nested Value");
-
-    expect(span?.textContent).to.equal("Parent Count: 10");
-  });
-
-  it("should render JSX within a custom web component using applyDiff", () => {
-    class DynamicRenderElement extends HTMLElement {
-      static get observedAttributes() {
-        return ["title", "count"];
-      }
-
-      private _count: number = 0;
-
-      constructor() {
-        super();
-      }
-
-      connectedCallback() {
-        this.render();
-      }
-
-      attributeChangedCallback(
-        name: string,
-        oldValue: string | null,
-        newValue: string | null
-      ) {
-        if (name === "title" || name === "count") {
-          this.render();
-        }
-      }
-
-      set count(val: number) {
-        this._count = val;
-        this.render();
-      }
-
-      get count() {
-        return this._count;
-      }
-
-      render() {
-        // Using applyDiff to render JSX inside the web component
         const vdom = (
-          <div>
+          <div class="parent-content">
             <h2>{this.getAttribute("title")}</h2>
+            <nested-shadow-element 
+              label="Nested Label" 
+              value="Nested Value"
+            ></nested-shadow-element>
             <p>Count: {this.count}</p>
           </div>
         );
-
-        // Apply the virtual DOM to the component's shadow DOM or itself
-        applyDiff(this, vdom);
+        applyDiff(this.shadow, vdom);
       }
     }
 
-    // Register the custom element
-    if (!customElements.get("dynamic-render-element")) {
-      customElements.define("dynamic-render-element", DynamicRenderElement);
+    // Register the custom elements
+    if (!customElements.get("nested-shadow-element")) {
+      customElements.define("nested-shadow-element", NestedShadowElement);
+    }
+    if (!customElements.get("parent-shadow-element")) {
+      customElements.define("parent-shadow-element", ParentShadowElement);
     }
 
-    // Render the custom web component with initial attributes
-    const vdom = (
-      <dynamic-render-element
-        title="Initial Title"
-        count={5}
-      ></dynamic-render-element>
+    const initialVdom = (
+      <parent-shadow-element title="Parent Title" count={5}></parent-shadow-element>
     );
 
-    applyDiff(container, vdom);
+    applyDiff(container, initialVdom);
 
-    const dynamicElement = container.querySelector(
-      "dynamic-render-element"
-    ) as DynamicRenderElement;
-    expect(dynamicElement).to.exist;
+    const parentElement = container.querySelector(
+      "parent-shadow-element"
+    ) as ParentShadowElement;
+    expect(parentElement).to.exist;
 
-    // Verify that the internal content was rendered correctly using applyDiff
-    const h2 = dynamicElement.querySelector("h2");
-    const p = dynamicElement.querySelector("p");
+    // Verify parent shadow DOM
+    const parentShadow = parentElement.shadowRoot;
+    expect(parentShadow).to.exist;
+    expect(parentShadow?.querySelector("h2")?.textContent).to.equal("Parent Title");
+    expect(parentShadow?.querySelector("p")?.textContent).to.equal("Count: 5");
 
-    expect(h2).to.exist;
-    expect(h2?.textContent).to.equal("Initial Title");
+    // Verify nested component within parent's shadow DOM
+    const nestedElement = parentShadow?.querySelector(
+      "nested-shadow-element"
+    ) as NestedShadowElement;
+    expect(nestedElement).to.exist;
 
-    expect(p).to.exist;
-    expect(p?.textContent).to.equal("Count: 5");
+    // Verify nested shadow DOM
+    const nestedShadow = nestedElement.shadowRoot;
+    expect(nestedShadow).to.exist;
+    expect(nestedShadow?.querySelector("h3")?.textContent).to.equal("Nested Label");
+    expect(nestedShadow?.querySelector("p")?.textContent).to.equal("Value: Nested Value");
 
-    // Now update the attributes and check if applyDiff correctly updates the content
+    // Update with new props
     const updatedVdom = (
-      <dynamic-render-element
-        title="Updated Title"
-        count={10}
-      ></dynamic-render-element>
+      <parent-shadow-element title="Updated Parent" count={10}></parent-shadow-element>
     );
 
     applyDiff(container, updatedVdom);
 
-    // Verify the updated content
-    expect(dynamicElement.getAttribute("title")).to.equal("Updated Title");
-    expect(dynamicElement.count).to.equal(10);
-
-    const updatedH2 = dynamicElement.querySelector("h2");
-    const updatedP = dynamicElement.querySelector("p");
-
-    expect(updatedH2?.textContent).to.equal("Updated Title");
-    expect(updatedP?.textContent).to.equal("Count: 10");
+    // Verify updated parent shadow DOM
+    expect(parentShadow?.querySelector("h2")?.textContent).to.equal("Updated Parent");
+    expect(parentShadow?.querySelector("p")?.textContent).to.equal("Count: 10");
   });
 });

@@ -41,6 +41,16 @@ function diffChildren(
 ): Node[] {
   const parentProps = getWebJSXProps(parent);
   const oldVNodes = parentProps.children ?? [];
+
+  if (newVNodes.length === 0) {
+    if (oldVNodes.length > 0) {
+      parent.innerHTML = "";
+      return [];
+    } else {
+      return [];
+    }
+  }
+
   const changes: DOMChange[] = [];
   let keyedMap: Map<
     NonBooleanPrimitive,
