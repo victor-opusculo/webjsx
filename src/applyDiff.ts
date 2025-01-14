@@ -47,6 +47,10 @@ function diffChildren(
       parent.innerHTML = "";
       return [];
     } else {
+      // If the parent
+      // a) never had any nodes
+      // b) OR was managing content via dangerouslySetInnerHTML
+      // we must not set parent.innerHTML = "";
       return [];
     }
   }
