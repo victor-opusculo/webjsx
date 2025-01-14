@@ -116,8 +116,10 @@ function updateAttributesCore(
       const html = newProps.dangerouslySetInnerHTML?.__html || "";
       el.innerHTML = html;
     }
-  } else if (oldProps.dangerouslySetInnerHTML) {
-    el.innerHTML = "";
+  } else {
+    if (oldProps.dangerouslySetInnerHTML) {
+      el.innerHTML = "";
+    }
   }
 
   // Remove old props/attributes
