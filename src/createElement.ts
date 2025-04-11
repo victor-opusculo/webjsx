@@ -1,5 +1,10 @@
 import { KNOWN_ELEMENTS } from "./elementTags.js";
-import { ChildTypes, Fragment, NonBooleanPrimitive, VNode } from "./types.js";
+import {
+  Fragment,
+  JSXChildTypes,
+  NonBooleanPrimitive,
+  VNode,
+} from "./types.js";
 import { flattenVNodes } from "./utils.js";
 
 /**
@@ -12,7 +17,7 @@ import { flattenVNodes } from "./utils.js";
 export function createElement(
   type: string | typeof Fragment,
   props: { [key: string]: unknown } | null,
-  ...children: ChildTypes[]
+  ...children: JSXChildTypes[]
 ): VNode | VNode[] {
   if (typeof type === "string") {
     const normalizedProps: { [key: string]: unknown } = props ? props : {};
@@ -53,7 +58,7 @@ export function createElementJSX(
   if (typeof type === "string") {
     props = props || {};
     const flatChildren: VNode[] = props
-      ? flattenVNodes(props.children as ChildTypes)
+      ? flattenVNodes(props.children as JSXChildTypes)
       : [];
 
     if (key !== undefined) {
@@ -82,7 +87,7 @@ export function createElementJSX(
     return result;
   } else {
     const flatChildren: VNode[] = props
-      ? flattenVNodes(props.children as ChildTypes)
+      ? flattenVNodes(props.children as JSXChildTypes)
       : [];
     return flatChildren;
   }

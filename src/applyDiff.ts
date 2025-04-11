@@ -1,7 +1,6 @@
 import { updateAttributes } from "./attributes.js";
 import { createDOMElement } from "./createDOMElement.js";
 import {
-  ChildTypes,
   NonBooleanPrimitive,
   VElement,
   VNode,
@@ -26,7 +25,7 @@ type DOMChange =
 
 export function applyDiff(
   parent: Element | ShadowRoot,
-  vnodes: ChildTypes
+  vnodes: VNode | VNode[]
 ): void {
   const newVNodes = flattenVNodes(vnodes);
   const newNodes = diffChildren(parent, newVNodes);

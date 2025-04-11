@@ -1,6 +1,7 @@
-/* eslint-disable */ 
+/* eslint-disable */
 import {
   ElementProps,
+  JSXElementProps,
   NonBooleanPrimitive,
   VElement
 } from "./types.js";
@@ -30,7 +31,7 @@ declare global {
         ? T[K]
         : T[K] | string;
     }> &
-      ElementProps;
+      JSXElementProps;
 
     /**
      * Maps HTML and SVG element types to their attribute types

@@ -1,7 +1,7 @@
 import { HTML_NAMESPACE } from "./constants.js";
 import {
-  ChildTypes,
   ElementProps,
+  JSXChildTypes,
   NonBooleanPrimitive,
   Ref,
   VElement,
@@ -15,7 +15,7 @@ import {
  * @returns Array of flattened virtual nodes
  */
 export function flattenVNodes(
-  vnodes: ChildTypes,
+  vnodes: JSXChildTypes,
   result: VNode[] = []
 ): VNode[] {
   if (Array.isArray(vnodes)) {

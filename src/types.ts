@@ -1,8 +1,13 @@
 import { flattenVNodes } from "./utils.js";
 
-export type ChildTypes = VNode | boolean | null | undefined | ChildTypes[];
+export type JSXChildTypes =
+  | VNode
+  | boolean
+  | null
+  | undefined
+  | JSXChildTypes[];
 
-export const Fragment = (props: { children?: ChildTypes }): VNode[] => {
+export const Fragment = (props: { children?: JSXChildTypes }): VNode[] => {
   return flattenVNodes(props.children);
 };
 
@@ -23,16 +28,19 @@ export type Ref<T extends Node = Node> =
 /**
  * Properties that can be applied to elements.
  */
-export interface ElementProps {
+export interface ElementPropsBase<TChildTypes> {
   [key: string]: unknown;
   is?: string;
   xmlns?: string;
   class?: string;
-  children?: VNode[] | null;
+  children?: TChildTypes;
   key?: NonBooleanPrimitive;
   dangerouslySetInnerHTML?: { __html: string };
   ref?: Ref<Node>;
 }
+
+export type JSXElementProps = ElementPropsBase<JSXChildTypes>;
+export type ElementProps = ElementPropsBase<VNode[] | null>;
 
 export type VElement = {
   type: string;
