@@ -12,6 +12,7 @@ There are a few examples on [StackBlitz](https://stackblitz.com/@jeswin/collecti
 - [Todo List](https://stackblitz.com/edit/webjsx-todos)
 - [Rotten Tomatoes Mockup](https://stackblitz.com/edit/webjsx-tomatoes)
 - [Boring Dashboard](https://stackblitz.com/edit/webjsx-dashboard)
+- [Vite Template](https://github.com/Astrian/webcomponents-initial-template) - A Vite starter template with WebJSX and other presets. Example included.
 
 ## Installation
 
