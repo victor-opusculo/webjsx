@@ -30,6 +30,7 @@
     "typescript-eslint": "^8.38.0"
   },
   "scripts": {
+    "prepare": "npm run build",
     "clean": "rm -rf ./dist",
     "build": "npm run clean && npx tsc",
     "build-dev": "npx tsc",
