@@ -211,9 +211,14 @@ function applyChanges(
         }
 
         if (!newProps.dangerouslySetInnerHTML && newProps.children != null) {
-          const childNodes = diffChildren(node as Element, newProps.children);
+          let childNodes = null;
+          if (!((node as Element).tagName.includes('-') && !(node as Element).shadowRoot))
+              childNodes = diffChildren(node as Element, newProps.children);
+                  
           setWebJSXProps(node as Element, newProps);
-          setWebJSXChildNodeCache(node as Element, childNodes);
+
+          if (childNodes)
+              setWebJSXChildNodeCache(node as Element, childNodes);
         }
       } else {
         if (newVNode !== oldVNode) {
